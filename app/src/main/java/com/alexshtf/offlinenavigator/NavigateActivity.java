@@ -1,12 +1,17 @@
 package com.alexshtf.offlinenavigator;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ToggleButton;
 
 import java.io.IOException;
 
@@ -17,18 +22,48 @@ public class NavigateActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
 
+    private ImageViewTouch mapImage;
+    private ToggleButton iAmHere;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
-        showImage();
+        findViews();
+        showImageFromIntent();
+        setupIAmHere();
     }
 
-    private void showImage() {
+    private void findViews() {
+        mapImage = (ImageViewTouch) findViewById(R.id.map_image);
+        iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
+    }
+
+    private void setupIAmHere() {
+        mapImage.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (iAmHere.isChecked()) {
+                    Matrix imageViewInv = new Matrix();
+                    mapImage.getImageViewMatrix().invert(imageViewInv);
+
+                    float[] xy = {event.getX(), event.getY()};
+                    imageViewInv.mapPoints(xy);
+
+                    Log.d("", "X = " + xy[0] + ", Y = " + xy[1]);
+
+                    iAmHere.setChecked(false);
+                }
+
+                return false;
+            }
+        });
+    }
+
+    private void showImageFromIntent() {
         String imageFile = getIntent().getStringExtra(MAP_IMAGE_FILE_KEY);
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(imageFile));
-            ImageViewTouch mapImage = (ImageViewTouch)findViewById(R.id.map_image);
             mapImage.setImageBitmap(bitmap, null, 1, 10);
         } catch (IOException e) {
             e.printStackTrace();
