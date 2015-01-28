@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.alexshtf.offlinenavigator">
+
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+
+</manifest>

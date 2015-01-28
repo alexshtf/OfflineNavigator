@@ -14,25 +14,41 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
 import java.io.IOException;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
 
-public class NavigateActivity extends ActionBarActivity {
+public class NavigateActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
 
     private ImageViewTouch mapImage;
     private ToggleButton iAmHere;
+    private GoogleApiClient googleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
+
+
+        setupFusedLocationApi();
         findViews();
         showImageFromIntent();
         setupIAmHere();
+    }
+
+    private void setupFusedLocationApi() {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
     }
 
     private void findViews() {
@@ -42,6 +58,21 @@ public class NavigateActivity extends ActionBarActivity {
 
     private void setupIAmHere() {
         mapImage.setOnTouchListener(new ImageTapListener());
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
     class ImageTapListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener
@@ -58,6 +89,7 @@ public class NavigateActivity extends ActionBarActivity {
                 imageViewInv.mapPoints(xy);
 
                 Log.d("", "X = " + xy[0] + ", Y = " + xy[1]);
+                Log.d("", "Location = " + LocationServices.FusedLocationApi.getLastLocation(googleApiClient));
 
                 iAmHere.setChecked(false);
             }
