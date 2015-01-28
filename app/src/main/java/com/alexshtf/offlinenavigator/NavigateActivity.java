@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -40,24 +41,35 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void setupIAmHere() {
-        mapImage.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (iAmHere.isChecked()) {
-                    Matrix imageViewInv = new Matrix();
-                    mapImage.getImageViewMatrix().invert(imageViewInv);
+        mapImage.setOnTouchListener(new ImageTapListener());
+    }
 
-                    float[] xy = {event.getX(), event.getY()};
-                    imageViewInv.mapPoints(xy);
+    class ImageTapListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener
+    {
+        GestureDetector gestureDetector = new GestureDetector(NavigateActivity.this, this);
 
-                    Log.d("", "X = " + xy[0] + ", Y = " + xy[1]);
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent event) {
+            if (iAmHere.isChecked()) {
+                Matrix imageViewInv = new Matrix();
+                mapImage.getImageViewMatrix().invert(imageViewInv);
 
-                    iAmHere.setChecked(false);
-                }
+                float[] xy = { event.getX(), event.getY() };
+                imageViewInv.mapPoints(xy);
 
-                return false;
+                Log.d("", "X = " + xy[0] + ", Y = " + xy[1]);
+
+                iAmHere.setChecked(false);
             }
-        });
+
+            return true;
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            gestureDetector.onTouchEvent(event);
+            return false;
+        }
     }
 
     private void showImageFromIntent() {
