@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Offline Navigator</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="add_existing_image">Add existing image</string>
+    <string name="title_activity_navigate">Navigate</string>
+
+</resources>
