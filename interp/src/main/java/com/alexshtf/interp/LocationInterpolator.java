@@ -1,18 +1,21 @@
 package com.alexshtf.interp;
 
 
+import java.util.ArrayList;
 
 public class LocationInterpolator {
-    private int count;
+    ArrayList<Point> onImage = new ArrayList<>();
+    ArrayList<Point> onMap = new ArrayList<>();
 
     public Point interpolate(float x, float y) {
-        if (count > 2)
-            return new Point(0, 0);
+        if (onImage.size() > 2)
+            return onImage.get(0);
         else
             return null;
     }
 
-    public void add(Point point, Point point1) {
-        ++count;
+    public void add(Point onImage, Point onMap) {
+        this.onImage.add(onImage);
+        this.onMap.add(onMap);
     }
 }
