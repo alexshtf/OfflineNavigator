@@ -56,14 +56,17 @@ public class Point {
     }
 
     public float distanceToSegment(Point segStart, Point segEnd) {
-    }
+        Point u = sub(segStart, segEnd);
+        Point v = sub(this, segEnd);
 
-    public float distanceToLine(Point p, Point v) {
-        // line equation: a*x + b*y + c = 0
-        Point ab = orthogonalTo(v).normalized();
-        float c = innerProduct(v, p.scaled(-1));
+        float lambda = innerProduct(u, v) / u.normSquared();
 
-        return Math.abs(ab.x * x + ab.y * y + c);
+        if (lambda < 0)      // we are near segEnd
+            return sub(this, segEnd).norm();
+        else if (lambda > 1) // we are near segStart
+            return sub(this, segStart).norm();
+        else                 // we are between segStart and segEnd
+            return sub(this, interpolate(segStart, segEnd, lambda)).norm();
     }
 
     @Override

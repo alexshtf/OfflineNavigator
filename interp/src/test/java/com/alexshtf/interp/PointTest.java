@@ -39,4 +39,21 @@ public class PointTest {
         assertThat(orthogonalTo(left), equalTo(up));
         assertThat(orthogonalTo(down), equalTo(left));
     }
+
+    @Test
+    public void computesDistanceToSegment() {
+        Point segStart = new Point(-1, 1);
+        Point segEnd = new Point(1, 1);
+
+        assertThat(segStart.distanceToSegment(segStart, segEnd), equalTo(0.0f));
+        assertThat(segEnd.distanceToSegment(segStart, segEnd), equalTo(0.0f));
+        assertThat(interpolate(segStart, segEnd, 0.5f).distanceToSegment(segStart, segEnd), equalTo(0.0f));
+        assertThat(pnt(-2, 1).distanceToSegment(segStart, segEnd), equalTo(1f));
+        assertThat(pnt(2, 1).distanceToSegment(segStart, segEnd), equalTo(1f));
+        assertThat(pnt(0, 0).distanceToSegment(segStart, segEnd), equalTo(1f));
+    }
+
+    static Point pnt(float x, float y) {
+        return new Point(x, y);
+    }
 }
