@@ -48,7 +48,7 @@ public class Point {
     }
 
     public static Point orthogonalTo(Point dir)  {
-        return new Point(-dir.getX(), dir.getY());
+        return new Point(dir.getY(), -dir.getX());
     }
 
     public static float innerProduct(Point p, Point q) {
@@ -87,5 +87,13 @@ public class Point {
         int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
         result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Point{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
     }
 }

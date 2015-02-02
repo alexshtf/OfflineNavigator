@@ -11,5 +11,5 @@ public @interface LinSpace
 {
     double first();
     double last();
-    int count();
+    int count() default 20;
 }

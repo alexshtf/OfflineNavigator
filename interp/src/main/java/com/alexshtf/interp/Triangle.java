@@ -1,5 +1,10 @@
 package com.alexshtf.interp;
 
+import org.ejml.simple.SimpleMatrix;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class Triangle {
     private Point[] pts;
 
@@ -14,17 +19,57 @@ public class Triangle {
      * @return The distance to the triangle.
      */
     public float distance(final Point x) {
-        return 0;
+        if (isInside(x))
+            return 0;
+
+        Point[][] triangleEdges = {
+                {pts[0], pts[1]},
+                {pts[1], pts[2]},
+                {pts[2], pts[0]}
+        };
+        Arrays.sort(triangleEdges, new CompareDistanceToEdgeFrom(x));
+        Point[] closestEdge = triangleEdges[0];
+
+        return x.distanceToSegment(closestEdge[0], closestEdge[1]);
+    }
+
+    private boolean isInside(Point x) {
+        float[] coordinates = barycentric(x);
+
+        Arrays.sort(coordinates);
+        float min = coordinates[0];
+        float max = coordinates[2];
+
+        return min >= 0 && max <= 1;
     }
 
     /**
      * Computes the barycentric coordinates of the given point.
-     * @param x The point to compute coordinates for.
+     * @param a The point to compute coordinates for.
      * @return An array of 3 coefficients such that x is the linear combination of the triangle's
-     * points returned by {@link this.at(int)}
+     * points returned by {@link this.at(int)}, and the coordinates sum to 1.
      */
-    public float[] barycentricCoordinates(Point x) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public float[] barycentric(Point a) {
+
+        SimpleMatrix mat = new SimpleMatrix(new double[][] {
+                {pts[0].getX(), pts[1].getX(), pts[2].getX()},
+                {pts[0].getY(), pts[1].getY(), pts[2].getY()},
+                {1            , 1            , 1            }
+        });
+
+        SimpleMatrix vec = new SimpleMatrix(new double[][] {
+                {a.getX()},
+                {a.getY()},
+                {1}
+        });
+
+        SimpleMatrix result = mat.pseudoInverse().mult(vec);
+
+        return new float[]{
+                (float) result.get(0, 0),
+                (float) result.get(1, 0),
+                (float) result.get(2, 0)
+        };
     }
 
     /**
@@ -36,4 +81,18 @@ public class Triangle {
         return pts[i];
     }
 
+    private static class CompareDistanceToEdgeFrom implements Comparator<Point[]> {
+        private final Point x;
+
+        public CompareDistanceToEdgeFrom(Point x) {
+            this.x = x;
+        }
+
+        @Override
+        public int compare(Point[] left, Point[] right) {
+            float dLeft = x.distanceToSegment(left[0], left[1]);
+            float dRight = x.distanceToSegment(right[0], right[1]);
+            return Float.compare(dLeft, dRight);
+        }
+    }
 }
