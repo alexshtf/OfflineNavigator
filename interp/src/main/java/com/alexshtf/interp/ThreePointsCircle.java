@@ -26,10 +26,10 @@ class ThreePointsCircle {
 
     boolean isInside(Point d) {
         FixedMatrix4x4_64F mat = new FixedMatrix4x4_64F(
-                a.getX(), a.getY(), a.nrm2(), 1,
-                b.getX(), b.getY(), b.nrm2(), 1,
-                c.getX(), c.getY(), c.nrm2(), 1,
-                d.getX(), d.getY(), d.nrm2(), 1);
+                a.getX(), a.getY(), a.normSquared(), 1,
+                b.getX(), b.getY(), b.normSquared(), 1,
+                c.getX(), c.getY(), c.normSquared(), 1,
+                d.getX(), d.getY(), d.normSquared(), 1);
 
         double det = FixedOps4.det(mat);
         if (det < 0)
