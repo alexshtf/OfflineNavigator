@@ -36,7 +36,6 @@ public class NavigateActivity extends ActionBarActivity implements GoogleApiClie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
 
-
         setupFusedLocationApi();
         findViews();
         showImageFromIntent();
