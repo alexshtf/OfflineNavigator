@@ -10,13 +10,13 @@ public class LocationInterpolatorTest  {
 
     @Test
     public void givenNoPointsProducesNullLocation() {
-        assertNull(interpolator.interpolate(50, 30));
+        assertNull(interpolator.interpolate(new Point(50, 30)));
     }
 
     @Test
     public void givenOnePointProducesNullLocation() {
         interpolator.add(new Point(1, 2), new Point(3, 4));
-        assertNull(interpolator.interpolate(60, 70));
+        assertNull(interpolator.interpolate(new Point(60, 70)));
     }
 
     @Test
@@ -24,15 +24,15 @@ public class LocationInterpolatorTest  {
     {
         interpolator.add(new Point(1, 2), new Point(3, 4));
         interpolator.add(new Point(5, 6), new Point(7, 8));
-        assertNull(interpolator.interpolate(-50, 30));
+        assertNull(interpolator.interpolate(new Point(-50, 30)));
     }
 
     @Test
     public void givenThreePointsProducesNonNullLocation()
     {
         interpolator.add(new Point(1, 2), new Point(3, 4));
-        interpolator.add(new Point(5, 6), new Point(7, 8));
+        interpolator.add(new Point(-5, -6), new Point(-7, -8));
         interpolator.add(new Point(9, 10), new Point(11, 12));
-        assertNotNull(interpolator.interpolate(-50, 40));
+        assertNotNull(interpolator.interpolate(new Point(-50, 40)));
     }
 }

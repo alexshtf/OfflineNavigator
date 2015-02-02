@@ -7,6 +7,7 @@ import java.util.Comparator;
 
 public class Triangle {
     private Point[] pts;
+    private Object tag;
 
     public Triangle(Point a, Point b, Point c) {
         pts = new Point[]{a, b, c};
@@ -33,6 +34,15 @@ public class Triangle {
         return x.distanceToSegment(closestEdge[0], closestEdge[1]);
     }
 
+    /**
+     * Computes the signed area of the triangle. Clockwise triangles have negative area,
+     * and counter-clockwise triangles have positive area.
+     * @return
+     */
+    public float signedArea() {
+        return (float) getAreaMatrix().determinant();
+    }
+
     private boolean isInside(Point x) {
         float[] coordinates = barycentric(x);
 
@@ -51,19 +61,13 @@ public class Triangle {
      */
     public float[] barycentric(Point a) {
 
-        SimpleMatrix mat = new SimpleMatrix(new double[][] {
-                {pts[0].getX(), pts[1].getX(), pts[2].getX()},
-                {pts[0].getY(), pts[1].getY(), pts[2].getY()},
-                {1            , 1            , 1            }
-        });
-
         SimpleMatrix vec = new SimpleMatrix(new double[][] {
                 {a.getX()},
                 {a.getY()},
                 {1}
         });
 
-        SimpleMatrix result = mat.pseudoInverse().mult(vec);
+        SimpleMatrix result = getAreaMatrix().pseudoInverse().mult(vec);
 
         return new float[]{
                 (float) result.get(0, 0),
@@ -79,6 +83,22 @@ public class Triangle {
      */
     public Point at(int i) {
         return pts[i];
+    }
+
+    public <T> T getTag() {
+        return (T) tag;
+    }
+
+    public void setTag(Object tag) {
+        this.tag = tag;
+    }
+
+    private SimpleMatrix getAreaMatrix() {
+        return new SimpleMatrix(new double[][] {
+                {pts[0].getX(), pts[1].getX(), pts[2].getX()},
+                {pts[0].getY(), pts[1].getY(), pts[2].getY()},
+                {1            , 1            , 1            }
+        });
     }
 
     private static class CompareDistanceToEdgeFrom implements Comparator<Point[]> {

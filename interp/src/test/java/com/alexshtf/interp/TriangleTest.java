@@ -10,6 +10,9 @@ import static com.alexshtf.interp.Point.interpolate;
 import static com.alexshtf.interp.Point.orthogonalTo;
 import static com.alexshtf.interp.Point.sub;
 import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -65,25 +68,6 @@ public class TriangleTest {
         assertEquals(20, triangle.distance(nearCA), precision);
     }
 
-    private static Point walkOrthogonallyFromEdge(Point a, Point b, float distance) {
-        return add(
-                between(a, b),
-                orthogonalTo(sub(b, a)).normalized().scaled(distance)
-        );
-    }
-
-    private static Point between(Point p, Point q) {
-        return interpolate(p, q, 0.5f);
-    }
-
-    private static Point fromBarycentric(Triangle t, double a, double b, double c) {
-        Point p = t.at(0).scaled((float)a);
-        Point q = t.at(1).scaled((float)b);
-        Point r = t.at(2).scaled((float)c);
-
-        return add(add(p, q), r);
-    }
-
 
     @Test
     public void distanceToPointsInsideTriangleIsZero() {
@@ -108,5 +92,34 @@ public class TriangleTest {
         assertEquals(0, triangle.distance(onAB), PRECISELY);
         assertEquals(0, triangle.distance(onBC), PRECISELY);
         assertEquals(0, triangle.distance(onAC), PRECISELY);
+    }
+
+    @Test
+    public void computesSignedArea() {
+        Triangle counterClockwise = triangle;
+        Triangle clockwise = new Triangle(a, c, b);
+
+        assertThat(counterClockwise.signedArea() + clockwise.signedArea(), equalTo(0f));
+        assertThat(counterClockwise.signedArea(), greaterThan(0f));
+        assertThat(clockwise.signedArea(), lessThan(0f));
+    }
+
+    private static Point walkOrthogonallyFromEdge(Point a, Point b, float distance) {
+        return add(
+                between(a, b),
+                orthogonalTo(sub(b, a)).normalized().scaled(distance)
+        );
+    }
+
+    private static Point between(Point p, Point q) {
+        return interpolate(p, q, 0.5f);
+    }
+
+    private static Point fromBarycentric(Triangle t, double a, double b, double c) {
+        Point p = t.at(0).scaled((float)a);
+        Point q = t.at(1).scaled((float)b);
+        Point r = t.at(2).scaled((float)c);
+
+        return add(add(p, q), r);
     }
 }
