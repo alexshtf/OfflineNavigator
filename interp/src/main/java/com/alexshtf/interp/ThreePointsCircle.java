@@ -5,12 +5,12 @@ import org.ejml.alg.fixed.FixedOps4;
 import org.ejml.data.FixedMatrix3x3_64F;
 import org.ejml.data.FixedMatrix4x4_64F;
 
-class ThreePointsCircle {
+public class ThreePointsCircle {
     private final Point a;
     private final Point b;
     private final Point c;
 
-    ThreePointsCircle(Point a, Point b, Point c)
+    public ThreePointsCircle(Point a, Point b, Point c)
     {
         if (areClockwise(a, b, c)) {
             this.a = a;
@@ -24,7 +24,7 @@ class ThreePointsCircle {
         }
     }
 
-    boolean isInside(Point d) {
+    public boolean isInside(Point d) {
         FixedMatrix4x4_64F mat = new FixedMatrix4x4_64F(
                 a.getX(), a.getY(), a.normSquared(), 1,
                 b.getX(), b.getY(), b.normSquared(), 1,

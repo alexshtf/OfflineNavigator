@@ -1,4 +1,7 @@
-package com.alexshtf.interp;
+package com.alexshtf.interp.test;
+
+import com.alexshtf.interp.Point;
+import com.alexshtf.interp.ThreePointsCircle;
 
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;

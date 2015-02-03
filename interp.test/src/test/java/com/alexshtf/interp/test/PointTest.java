@@ -1,4 +1,6 @@
-package com.alexshtf.interp;
+package com.alexshtf.interp.test;
+
+import com.alexshtf.interp.Point;
 
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;

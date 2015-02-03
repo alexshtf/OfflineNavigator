@@ -1,1 +1,1 @@
-include ':app', ':imageviewzoom', ':interp'
+include ':app', ':imageviewzoom', ':interp', ':interp.test'

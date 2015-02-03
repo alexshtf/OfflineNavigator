@@ -1,4 +1,4 @@
-package com.alexshtf.interp;
+package com.alexshtf.interp.test;
 
 import org.junit.experimental.theories.ParametersSuppliedBy;
 
