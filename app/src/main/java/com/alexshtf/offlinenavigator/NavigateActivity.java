@@ -2,6 +2,7 @@ package com.alexshtf.offlinenavigator;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,7 +24,7 @@ import java.io.IOException;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
 
-public class NavigateActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class NavigateActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
 
@@ -31,76 +32,55 @@ public class NavigateActivity extends ActionBarActivity implements GoogleApiClie
     private ToggleButton iAmHere;
     private GoogleApiClient googleApiClient;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
 
-        setupFusedLocationApi();
-        findViews();
-        showImageFromIntent();
-        setupIAmHere();
-    }
-
-    private void setupFusedLocationApi() {
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
                 .build();
-    }
 
-    private void findViews() {
         mapImage = (ImageViewTouch) findViewById(R.id.map_image);
         iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
-    }
 
-    private void setupIAmHere() {
         mapImage.setOnTouchListener(new ImageTapListener());
+
+        showImageFromIntent();
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
+    protected void onStart() {
+        super.onStart();
 
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
-
-    class ImageTapListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener
-    {
-        GestureDetector gestureDetector = new GestureDetector(NavigateActivity.this, this);
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent event) {
-            if (iAmHere.isChecked()) {
-                Matrix imageViewInv = new Matrix();
-                mapImage.getImageViewMatrix().invert(imageViewInv);
-
-                float[] xy = { event.getX(), event.getY() };
-                imageViewInv.mapPoints(xy);
-
-                Log.d("", "X = " + xy[0] + ", Y = " + xy[1]);
-                Log.d("", "Location = " + LocationServices.FusedLocationApi.getLastLocation(googleApiClient));
-
-                iAmHere.setChecked(false);
+        googleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+            @Override
+            public void onConnected(Bundle bundle) {
+                Log.i("", "Google Location API connected");
             }
 
-            return true;
-        }
+            @Override
+            public void onConnectionSuspended(int i) {
+                Log.i("", "Google Location API connection suspended");
+            }
+        });
 
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            gestureDetector.onTouchEvent(event);
-            return false;
-        }
+        googleApiClient.registerConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+            @Override
+            public void onConnectionFailed(ConnectionResult connectionResult) {
+                Log.e("", "Google Location API connection failed " + connectionResult.toString());
+            }
+        });
+
+        Log.i("", "Connecting to Google Location API client");
+        googleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        googleApiClient.disconnect();
+        super.onStop();
     }
 
     private void showImageFromIntent() {
@@ -109,7 +89,7 @@ public class NavigateActivity extends ActionBarActivity implements GoogleApiClie
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(imageFile));
             mapImage.setImageBitmap(bitmap, null, 1, 10);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("", "Unable to read image", e);
         }
     }
 
@@ -133,5 +113,37 @@ public class NavigateActivity extends ActionBarActivity implements GoogleApiClie
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    class ImageTapListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener
+    {
+        GestureDetector gestureDetector = new GestureDetector(NavigateActivity.this, this);
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent event) {
+            if (iAmHere.isChecked()) {
+                Matrix imageViewInv = new Matrix();
+                mapImage.getImageViewMatrix().invert(imageViewInv);
+
+                float[] xy = { event.getX(), event.getY() };
+                imageViewInv.mapPoints(xy);
+                Log.d("", "X = " + xy[0] + ", Y = " + xy[1]);
+
+                Location fusedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+                Log.d("", "Location: " + fusedLocation.toString());
+                Log.d("", "Location provider: " + fusedLocation.getProvider());
+                Log.d("", "Location extras: " + fusedLocation.getExtras());
+
+                iAmHere.setChecked(false);
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            gestureDetector.onTouchEvent(event);
+            return false;
+        }
     }
 }
