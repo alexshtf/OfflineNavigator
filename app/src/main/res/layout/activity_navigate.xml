@@ -26,7 +26,7 @@
         android:layout_height="fill_parent"
         android:layout_above="@id/buttons">
 
-        <it.sephiroth.android.library.imagezoom.ImageViewTouch
+        <com.alexshtf.offlinenavigator.MatrixNotifyingImageView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/map_image"/>

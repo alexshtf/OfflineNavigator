@@ -8,11 +8,9 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ToggleButton;
 
@@ -32,8 +30,8 @@ public class NavigateActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
 
-    private ImageViewTouch mapImage;
-    private ImageView locationIcon;
+    private MatrixNotifyingImageView mapImage;
+    private LocationIconPositionManager locationIconPositionManager;
     private ToggleButton iAmHere;
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
@@ -47,11 +45,12 @@ public class NavigateActivity extends ActionBarActivity {
                 .addApi(LocationServices.API)
                 .build();
 
-        mapImage = (ImageViewTouch) findViewById(R.id.map_image);
-        locationIcon = (ImageView) findViewById(R.id.location_icon);
+        mapImage = (MatrixNotifyingImageView) findViewById(R.id.map_image);
         iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
 
-        mapImage.setOnTouchListener(new ImageTapListener());
+        locationIconPositionManager = new LocationIconPositionManager(mapImage, (ImageView) findViewById(R.id.location_icon));
+        mapImage.setSingleTapListener(new ImageTapListener());
+        mapImage.setImageMatrixChangedListener(locationIconPositionManager);
 
         enableDisableControls();
         showImageFromIntent();
@@ -114,7 +113,7 @@ public class NavigateActivity extends ActionBarActivity {
 
     private void reportCurrentLocation(float imageX, float imageY) {
         Log.d("", "X = " + imageX + ", Y = " + imageY);
-        showCurrentLocation(imageX, imageY);
+        locationIconPositionManager.setLocation(imageX, imageY);
 
         if (lastLocation == null)
         {
@@ -134,12 +133,35 @@ public class NavigateActivity extends ActionBarActivity {
         iAmHere.setChecked(false);
     }
 
-    private void showCurrentLocation(float imageX, float imageY) {
-        float[] xy = {imageX, imageY};
-        mapImage.getImageViewMatrix().mapPoints(xy);
+    private class LocationIconPositionManager implements MatrixNotifyingImageView.ImageMatrixChangedListener {
+        private ImageViewTouch mapImage;
+        private ImageView locationIcon;
+        private float imageX;
+        private float imageY;
 
-        locationIcon.setTranslationX(xy[0] - 0.5f * locationIcon.getWidth());
-        locationIcon.setTranslationY(xy[1] - 0.5f * locationIcon.getHeight());
+        public LocationIconPositionManager(ImageViewTouch mapImage, ImageView locationIcon) {
+            this.mapImage = mapImage;
+            this.locationIcon = locationIcon;
+        }
+
+        @Override
+        public void onChanged() {
+            update();
+        }
+
+        public void setLocation(float imageX, float imageY) {
+            this.imageX = imageX;
+            this.imageY = imageY;
+            update();
+        }
+
+        private void update() {
+            float[] xy = {imageX, imageY};
+            mapImage.getImageViewMatrix().mapPoints(xy);
+
+            locationIcon.setTranslationX(xy[0] - 0.5f * locationIcon.getWidth());
+            locationIcon.setTranslationY(xy[1] - 0.5f * locationIcon.getHeight());
+        }
     }
 
     private class ConnectionCallback implements GoogleApiClient.ConnectionCallbacks {
@@ -175,12 +197,10 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-    class ImageTapListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener
+    class ImageTapListener implements ImageViewTouch.OnImageViewTouchSingleTapListener
     {
-        GestureDetector gestureDetector = new GestureDetector(NavigateActivity.this, this);
-
         @Override
-        public boolean onSingleTapConfirmed(MotionEvent event) {
+        public void onSingleTapConfirmed(MotionEvent event) {
             if (iAmHere.isChecked()) {
 
                 Matrix imageViewInv = new Matrix();
@@ -191,14 +211,6 @@ public class NavigateActivity extends ActionBarActivity {
 
                 reportCurrentLocation(xy[0], xy[1]);
             }
-
-            return true;
-        }
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            gestureDetector.onTouchEvent(event);
-            return false;
         }
     }
 }
