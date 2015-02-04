@@ -14,6 +14,8 @@ import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.ToggleButton;
 
+import com.alexshtf.interp.LocationInterpolator;
+import com.alexshtf.interp.Point;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -24,7 +26,11 @@ import java.io.IOException;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
-//geo fix 32.795083 34.983981
+// geo fix 35.015737 32.778583 - Technion entrance
+// geo fix 35.008913 32.782209 - International / Hankin crossing
+// geo fix 35.014556 32.783021 - Ziv square
+// geo fix 35.012389 32.781289 - Borochov Garden
+// geo fix 35.017775 32.785240 - Trumpeldor / Chanita
 
 public class NavigateActivity extends ActionBarActivity {
 
@@ -35,6 +41,7 @@ public class NavigateActivity extends ActionBarActivity {
     private ToggleButton iAmHere;
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
+    private LocationInterpolator interpolator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +61,7 @@ public class NavigateActivity extends ActionBarActivity {
 
         enableDisableControls();
         showImageFromIntent();
+        interpolator = new LocationInterpolator();
     }
 
     @Override
@@ -111,26 +119,41 @@ public class NavigateActivity extends ActionBarActivity {
             iAmHere.setEnabled(true);
     }
 
-    private void reportCurrentLocation(float imageX, float imageY) {
-        Log.d("", "X = " + imageX + ", Y = " + imageY);
-        locationIconPositionManager.setLocation(imageX, imageY);
+    private void updateIAmHere(float imageX, float imageY) {
+        iAmHere.setChecked(false);
 
+        repositionLocationIcon(imageX, imageY);
+        updateInterpolator(imageX, imageY);
+    }
+
+    private void updateInterpolator(float imageX, float imageY) {
         if (lastLocation == null)
-        {
-            Log.d("", "Location: null");
             return;
-        }
 
         float longitude = (float) lastLocation.getLongitude();
         float latitude = (float) lastLocation.getLatitude();
+        interpolator.add(new Point(imageX, imageY), new Point(longitude, latitude));
+    }
 
-        Log.d("", "Location: " + lastLocation.toString());
-        Log.d("", "Location provider: " + lastLocation.getProvider());
-        Log.d("", "Location extras: " + lastLocation.getExtras());
-        Log.d("", "Longitude: " + longitude);
-        Log.d("", "Latitude: " + latitude);
+    private void repositionLocationIcon(float imageX, float imageY) {
+        Log.d("", "X = " + imageX + ",  Y = " + imageY);
+        locationIconPositionManager.reposition(imageX, imageY);
+    }
 
-        iAmHere.setChecked(false);
+    private void updateLastLocation(Location location) {
+        lastLocation = location;
+        enableDisableControls();
+        displayInterpolatedLocation();
+    }
+
+    private void displayInterpolatedLocation() {
+        Point approximateOnImage = interpolator.interpolate(Point.xy(
+                (float) lastLocation.getLongitude(),
+                (float) lastLocation.getLatitude()
+        ));
+
+        if (approximateOnImage != null)
+            repositionLocationIcon(approximateOnImage.getX(), approximateOnImage.getY());
     }
 
     private class LocationIconPositionManager implements MatrixNotifyingImageView.ImageMatrixChangedListener {
@@ -149,7 +172,7 @@ public class NavigateActivity extends ActionBarActivity {
             update();
         }
 
-        public void setLocation(float imageX, float imageY) {
+        public void reposition(float imageX, float imageY) {
             this.imageX = imageX;
             this.imageY = imageY;
             update();
@@ -170,7 +193,9 @@ public class NavigateActivity extends ActionBarActivity {
             Log.i("", "Google Location API connected. Requesting location updates");
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient,
-                    LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY),
+                    LocationRequest.create()
+                            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                            .setInterval(5000),
                     new LocationUpdateListener()
             );
         }
@@ -181,12 +206,19 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-
     private class LocationUpdateListener implements LocationListener {
         @Override
         public void onLocationChanged(Location location) {
-            lastLocation = location;
-            enableDisableControls();
+            logLocation(location);
+            updateLastLocation(location);
+        }
+
+        private void logLocation(Location location) {
+            Log.d("", "Location: " + location.toString());
+            Log.d("", "Location provider: " + location.getProvider());
+            Log.d("", "Location extras: " + location.getExtras());
+            Log.d("", "Longitude: " + location.getLongitude());
+            Log.d("", "Latitude: " + location.getLatitude());
         }
     }
 
@@ -197,7 +229,7 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-    class ImageTapListener implements ImageViewTouch.OnImageViewTouchSingleTapListener
+    private class ImageTapListener implements ImageViewTouch.OnImageViewTouchSingleTapListener
     {
         @Override
         public void onSingleTapConfirmed(MotionEvent event) {
@@ -209,7 +241,7 @@ public class NavigateActivity extends ActionBarActivity {
                 float[] xy = { event.getX(), event.getY() };
                 imageViewInv.mapPoints(xy);
 
-                reportCurrentLocation(xy[0], xy[1]);
+                updateIAmHere(xy[0], xy[1]);
             }
         }
     }
