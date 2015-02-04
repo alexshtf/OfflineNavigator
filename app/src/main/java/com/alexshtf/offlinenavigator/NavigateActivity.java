@@ -54,6 +54,7 @@ public class NavigateActivity extends ActionBarActivity {
         mapImage.setOnTouchListener(new ImageTapListener());
 
         enableDisableControls();
+        showImageFromIntent();
     }
 
     @Override
