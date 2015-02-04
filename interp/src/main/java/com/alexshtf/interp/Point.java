@@ -10,6 +10,10 @@ public class Point {
         this.y = y;
     }
 
+    public static Point xy(float x, float y) {
+        return new Point(x, y);
+    }
+
     public float getX() {
         return x;
     }

@@ -4,5 +4,4 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'math.geom2d:javaGeom:0.11.1'
     compile 'com.googlecode.efficient-java-matrix-library:core:0.26'
-    compile 'com.googlecode.efficient-java-matrix-library:ejml:0.25'
 }
