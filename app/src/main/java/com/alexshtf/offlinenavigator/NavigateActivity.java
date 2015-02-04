@@ -26,11 +26,6 @@ import java.io.IOException;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
-// geo fix 35.015737 32.778583 - Technion entrance
-// geo fix 35.008913 32.782209 - International / Hankin crossing
-// geo fix 35.014556 32.783021 - Ziv square
-// geo fix 35.012389 32.781289 - Borochov Garden
-// geo fix 35.017775 32.785240 - Trumpeldor / Chanita
 
 public class NavigateActivity extends ActionBarActivity {
 

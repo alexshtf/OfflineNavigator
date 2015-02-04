@@ -1,0 +1,7 @@
+// geo fix 140.709256 41.770019 - Omachi tram station
+// geo fix 140.709170 41.766114 - Motomachi park, north-west corner
+// geo fix 140.712468 41.766480 - Suehirocho tram stop
+// geo fix 140.713994 41.760790 - Mount hakodate ropeway
+// geo fix 140.715210 41.765116 - Document Museum of Northern History
+// geo fix 140.712828 41.763264 - Motomachi Roman Catholic Church
+// geo fix 140.712372 41.762780 - Motomachi Russian Orthodox Church
