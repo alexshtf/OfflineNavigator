@@ -39,7 +39,6 @@ public class NavigateActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
 
-    private FrameLayout mapLayout;
     private MatrixNotifyingImageView mapImage;
     private LocationIconPositionManager locationIconPositionManager;
     private ToggleButton iAmHere;
@@ -57,7 +56,7 @@ public class NavigateActivity extends ActionBarActivity {
                 .addApi(LocationServices.API)
                 .build();
 
-        mapLayout = (FrameLayout) findViewById(R.id.map_layout);
+        FrameLayout mapLayout = (FrameLayout) findViewById(R.id.map_layout);
         mapImage = (MatrixNotifyingImageView) findViewById(R.id.map_image);
         iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
 
