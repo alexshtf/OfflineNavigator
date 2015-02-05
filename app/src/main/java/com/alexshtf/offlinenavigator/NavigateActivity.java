@@ -43,7 +43,6 @@ public class NavigateActivity extends ActionBarActivity {
     private LocationIconPositionManager locationIconPositionManager;
     private ToggleButton iAmHere;
     private GoogleApiClient googleApiClient;
-    private Location lastLocation;
     private LocationInterpolator locationInterpolator;
     private AnchorsManager anchorsManager;
 
@@ -129,17 +128,14 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void enableDisableControls() {
-        if (lastLocation == null)
-            iAmHere.setEnabled(false);
-        else
-            iAmHere.setEnabled(true);
+        iAmHere.setEnabled(anchorsManager.canAddAnchor());
     }
 
     private void addAnchor(float imageX, float imageY) {
         iAmHere.setChecked(false);
 
         repositionLocationIcon(imageX, imageY);
-        anchorsManager.addAnchor(lastLocation, imageX, imageY);
+        anchorsManager.addAnchor(imageX, imageY);
     }
 
     private void repositionLocationIcon(float imageX, float imageY) {
@@ -148,13 +144,13 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void updateLastLocation(Location location) {
-        lastLocation = location;
+        anchorsManager.updateLocation(location);
         enableDisableControls();
-        displayInterpolatedLocation();
+        displayInterpolatedLocation(location);
     }
 
-    private void displayInterpolatedLocation() {
-        Point onImage = locationInterpolator.interpolate(asPoint(lastLocation));
+    private void displayInterpolatedLocation(Location location) {
+        Point onImage = locationInterpolator.interpolate(asPoint(location));
         if (onImage != null)
             repositionLocationIcon(onImage.getX(), onImage.getY());
     }
@@ -181,6 +177,7 @@ public class NavigateActivity extends ActionBarActivity {
         private final List<ImageView> anchorIcons;
         private final MatrixNotifyingImageView mapImage;
         private final FrameLayout mapLayout;
+        private Location lastLocation;
 
         public AnchorsManager(MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
             this.locationInterpolator = locationInterpolator;
@@ -204,12 +201,9 @@ public class NavigateActivity extends ActionBarActivity {
             }
         }
 
-        public void addAnchor(Location onMap, float imageX, float imageY) {
-            if (onMap == null)
-                return;
-
+        public void addAnchor(float imageX, float imageY) {
             Point onImage = Point.xy(imageX, imageY);
-            locationInterpolator.addAnchor(onImage, asPoint(onMap));
+            locationInterpolator.addAnchor(onImage, asPoint(lastLocation));
             anchorIcons.add(addAnchorIconAt(onImage));
             updateIconsDisplay();
         }
@@ -240,6 +234,14 @@ public class NavigateActivity extends ActionBarActivity {
             view.setTag(R.id.POINT_KEY, point);
 
             return view;
+        }
+
+        public void updateLocation(Location location) {
+            lastLocation = location;
+        }
+
+        public boolean canAddAnchor() {
+            return lastLocation != null;
         }
     }
 
