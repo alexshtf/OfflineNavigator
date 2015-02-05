@@ -24,7 +24,8 @@
     <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_above="@id/buttons">
+        android:layout_above="@id/buttons"
+        android:id="@+id/map_layout">
 
         <com.alexshtf.offlinenavigator.MatrixNotifyingImageView
             android:layout_width="fill_parent"
@@ -36,6 +37,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/location"
             android:scaleType="matrix"
+            android:visibility="invisible"
             android:id="@+id/location_icon"/>
     </FrameLayout>
 

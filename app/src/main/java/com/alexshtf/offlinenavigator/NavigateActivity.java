@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ToggleButton;
 
@@ -23,20 +26,26 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+
+import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
 
 public class NavigateActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
 
+    private FrameLayout mapLayout;
     private MatrixNotifyingImageView mapImage;
     private LocationIconPositionManager locationIconPositionManager;
     private ToggleButton iAmHere;
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
     private LocationInterpolator locationInterpolator;
+    private AnchorsManager anchorsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,17 +56,22 @@ public class NavigateActivity extends ActionBarActivity {
                 .addApi(LocationServices.API)
                 .build();
 
+        mapLayout = (FrameLayout) findViewById(R.id.map_layout);
         mapImage = (MatrixNotifyingImageView) findViewById(R.id.map_image);
         iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
 
         locationIconPositionManager = new LocationIconPositionManager(mapImage, (ImageView) findViewById(R.id.location_icon));
-        mapImage.setSingleTapListener(new ImageTapListener());
-        mapImage.setImageMatrixChangedListener(locationIconPositionManager);
+        locationInterpolator = LocationInterpolatorStorage.fromBundle(savedInstanceState);
+        anchorsManager = new AnchorsManager(mapImage, mapLayout, locationInterpolator);
 
         enableDisableControls();
         showImageFromIntent();
 
-        locationInterpolator = LocationInterpolatorStorage.fromBundle(savedInstanceState);
+        mapImage.setSingleTapListener(new ImageTapListener());
+        mapImage.setImageMatrixChangedListener(new ImageMatrixChangedListener(
+                locationIconPositionManager,
+                anchorsManager
+        ));
     }
 
     @Override
@@ -125,16 +139,7 @@ public class NavigateActivity extends ActionBarActivity {
         iAmHere.setChecked(false);
 
         repositionLocationIcon(imageX, imageY);
-        updateInterpolator(imageX, imageY);
-    }
-
-    private void updateInterpolator(float imageX, float imageY) {
-        if (lastLocation == null)
-            return;
-
-        float longitude = (float) lastLocation.getLongitude();
-        float latitude = (float) lastLocation.getLatitude();
-        locationInterpolator.addAnchor(new Point(imageX, imageY), new Point(longitude, latitude));
+        anchorsManager.addAnchor(lastLocation, imageX, imageY);
     }
 
     private void repositionLocationIcon(float imageX, float imageY) {
@@ -149,16 +154,90 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void displayInterpolatedLocation() {
-        Point approximateOnImage = locationInterpolator.interpolate(Point.xy(
-                (float) lastLocation.getLongitude(),
-                (float) lastLocation.getLatitude()
-        ));
-
-        if (approximateOnImage != null)
-            repositionLocationIcon(approximateOnImage.getX(), approximateOnImage.getY());
+        Point onImage = locationInterpolator.interpolate(asPoint(lastLocation));
+        if (onImage != null)
+            repositionLocationIcon(onImage.getX(), onImage.getY());
     }
 
-    private class LocationIconPositionManager implements MatrixNotifyingImageView.ImageMatrixChangedListener {
+    private class ImageMatrixChangedListener implements MatrixNotifyingImageView.ImageMatrixChangedListener {
+
+        private LocationIconPositionManager locMgr;
+        private AnchorsManager anchorsMgr;
+
+        private ImageMatrixChangedListener(LocationIconPositionManager locMgr, AnchorsManager anchorsMgr) {
+            this.locMgr = locMgr;
+            this.anchorsMgr = anchorsMgr;
+        }
+
+        @Override
+        public void onChanged() {
+            locMgr.updateDisplay();
+            anchorsMgr.updateIconsDisplay();
+        }
+    }
+
+    private class AnchorsManager {
+        private final LocationInterpolator locationInterpolator;
+        private final List<ImageView> anchorIcons;
+        private final MatrixNotifyingImageView mapImage;
+        private final FrameLayout mapLayout;
+
+        public AnchorsManager(MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
+            this.locationInterpolator = locationInterpolator;
+            this.mapImage = mapImage;
+            this.mapLayout = mapLayout;
+            this.anchorIcons = anchorIconsFrom(locationInterpolator);
+        }
+
+        public void updateIconsDisplay() {
+            for(ImageView icon : anchorIcons) {
+                Point point = (Point) icon.getTag();
+
+                float[] xy = { point.getX(), point.getY() };
+                mapImage.getImageViewMatrix().mapPoints(xy);
+
+                icon.setTranslationX(xy[0] - 0.5f * icon.getWidth());
+                icon.setTranslationY(xy[1] - 0.5f * icon.getHeight());
+                icon.setVisibility(View.VISIBLE);
+            }
+        }
+
+        public void addAnchor(Location onMap, float imageX, float imageY) {
+            if (onMap == null)
+                return;
+
+            Point onImage = Point.xy(imageX, imageY);
+            locationInterpolator.addAnchor(onImage, asPoint(onMap));
+            anchorIcons.add(addAnchorIconAt(onImage));
+            updateIconsDisplay();
+        }
+
+        private List<ImageView> anchorIconsFrom(LocationInterpolator li) {
+            List<ImageView> result = new ArrayList<>();
+
+            for(Point point : li.getPointsOnImage())
+                result.add(addAnchorIconAt(point));
+
+            return result;
+        }
+
+        private ImageView addAnchorIconAt(Point point) {
+            ImageView view = new ImageView(NavigateActivity.this);
+            mapLayout.addView(view);
+
+            view.setLayoutParams(new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            view.setImageResource(R.drawable.anchor_icon);
+            view.setTag(point);
+            view.setVisibility(View.INVISIBLE);
+
+            return view;
+        }
+    }
+
+    private class LocationIconPositionManager {
         private ImageViewTouch mapImage;
         private ImageView locationIcon;
         private float imageX;
@@ -169,23 +248,19 @@ public class NavigateActivity extends ActionBarActivity {
             this.locationIcon = locationIcon;
         }
 
-        @Override
-        public void onChanged() {
-            update();
-        }
-
         public void reposition(float imageX, float imageY) {
             this.imageX = imageX;
             this.imageY = imageY;
-            update();
+            updateDisplay();
         }
 
-        private void update() {
+        private void updateDisplay() {
             float[] xy = {imageX, imageY};
             mapImage.getImageViewMatrix().mapPoints(xy);
 
             locationIcon.setTranslationX(xy[0] - 0.5f * locationIcon.getWidth());
             locationIcon.setTranslationY(xy[1] - 0.5f * locationIcon.getHeight());
+            locationIcon.setVisibility(View.VISIBLE);
         }
     }
 
@@ -247,4 +322,5 @@ public class NavigateActivity extends ActionBarActivity {
             }
         }
     }
+
 }
