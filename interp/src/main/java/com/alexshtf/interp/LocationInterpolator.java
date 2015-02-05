@@ -21,11 +21,15 @@ public class LocationInterpolator {
         return result;
     }
 
-    public void add(Point onImage, Point onMap) {
+    public void addAnchor(Point onImage, Point onMap) {
         this.onImage.add(onImage);
         this.onMap.add(onMap);
         this.trianglesOnMap = computeTriangulation(this.onMap);
     }
+
+    public int getAnchorsCount() { return onImage.size(); }
+    public List<Point> getPointsOnImage() { return Collections.unmodifiableList(onImage); }
+    public List<Point> getPointsOnMap() { return Collections.unmodifiableList(onMap); }
 
     private static ArrayList<Triangle> computeTriangulation(List<Point> points) {
         ArrayList<Triangle> triangles = new ArrayList<>();

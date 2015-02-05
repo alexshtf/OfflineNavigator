@@ -36,7 +36,7 @@ public class NavigateActivity extends ActionBarActivity {
     private ToggleButton iAmHere;
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
-    private LocationInterpolator interpolator;
+    private LocationInterpolator locationInterpolator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,14 @@ public class NavigateActivity extends ActionBarActivity {
 
         enableDisableControls();
         showImageFromIntent();
-        interpolator = new LocationInterpolator();
+
+        locationInterpolator = LocationInterpolatorStorage.fromBundle(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        LocationInterpolatorStorage.toBundle(locationInterpolator, outState);
     }
 
     @Override
@@ -114,7 +121,7 @@ public class NavigateActivity extends ActionBarActivity {
             iAmHere.setEnabled(true);
     }
 
-    private void updateIAmHere(float imageX, float imageY) {
+    private void addAnchor(float imageX, float imageY) {
         iAmHere.setChecked(false);
 
         repositionLocationIcon(imageX, imageY);
@@ -127,7 +134,7 @@ public class NavigateActivity extends ActionBarActivity {
 
         float longitude = (float) lastLocation.getLongitude();
         float latitude = (float) lastLocation.getLatitude();
-        interpolator.add(new Point(imageX, imageY), new Point(longitude, latitude));
+        locationInterpolator.addAnchor(new Point(imageX, imageY), new Point(longitude, latitude));
     }
 
     private void repositionLocationIcon(float imageX, float imageY) {
@@ -142,7 +149,7 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void displayInterpolatedLocation() {
-        Point approximateOnImage = interpolator.interpolate(Point.xy(
+        Point approximateOnImage = locationInterpolator.interpolate(Point.xy(
                 (float) lastLocation.getLongitude(),
                 (float) lastLocation.getLatitude()
         ));
@@ -236,7 +243,7 @@ public class NavigateActivity extends ActionBarActivity {
                 float[] xy = { event.getX(), event.getY() };
                 imageViewInv.mapPoints(xy);
 
-                updateIAmHere(xy[0], xy[1]);
+                addAnchor(xy[0], xy[1]);
             }
         }
     }
