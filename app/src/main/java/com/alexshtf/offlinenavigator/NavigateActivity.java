@@ -2,7 +2,6 @@ package com.alexshtf.offlinenavigator;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ToggleButton;
@@ -27,8 +25,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
@@ -61,7 +57,7 @@ public class NavigateActivity extends ActionBarActivity {
 
         locationIconPositionManager = new LocationIconPositionManager(mapImage, (ImageView) findViewById(R.id.location_icon));
         locationInterpolator = LocationInterpolatorStorage.fromBundle(savedInstanceState);
-        anchorsManager = new AnchorsManager(mapImage, mapLayout, locationInterpolator);
+        anchorsManager = new AnchorsManager(this, mapImage, mapLayout, locationInterpolator);
 
         enableDisableControls();
         showImageFromIntent();
@@ -169,79 +165,6 @@ public class NavigateActivity extends ActionBarActivity {
         public void onChanged() {
             locMgr.updateDisplay();
             anchorsMgr.updateIconsDisplay();
-        }
-    }
-
-    private class AnchorsManager {
-        private final LocationInterpolator locationInterpolator;
-        private final List<ImageView> anchorIcons;
-        private final MatrixNotifyingImageView mapImage;
-        private final FrameLayout mapLayout;
-        private Location lastLocation;
-
-        public AnchorsManager(MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
-            this.locationInterpolator = locationInterpolator;
-            this.mapImage = mapImage;
-            this.mapLayout = mapLayout;
-            this.anchorIcons = anchorIconsFrom(locationInterpolator);
-        }
-
-        public void updateIconsDisplay() {
-            for(ImageView icon : anchorIcons) {
-                Point point = (Point) icon.getTag(R.id.POINT_KEY);
-                int w = (Integer) icon.getTag(R.id.WIDTH_KEY);
-                int h = (Integer) icon.getTag(R.id.HEIGHT_KEY);
-
-                float[] xy = { point.getX(), point.getY() };
-                mapImage.getImageViewMatrix().mapPoints(xy);
-
-                icon.setTranslationX(xy[0] - 0.5f * w);
-                icon.setTranslationY(xy[1] - 0.5f * h);
-                icon.setVisibility(View.VISIBLE);
-            }
-        }
-
-        public void addAnchor(float imageX, float imageY) {
-            Point onImage = Point.xy(imageX, imageY);
-            locationInterpolator.addAnchor(onImage, asPoint(lastLocation));
-            anchorIcons.add(addAnchorIconAt(onImage));
-            updateIconsDisplay();
-        }
-
-        private List<ImageView> anchorIconsFrom(LocationInterpolator li) {
-            List<ImageView> result = new ArrayList<>();
-
-            for(Point point : li.getPointsOnImage())
-                result.add(addAnchorIconAt(point));
-
-            return result;
-        }
-
-        private ImageView addAnchorIconAt(Point point) {
-            ImageView view = new ImageView(NavigateActivity.this);
-            mapLayout.addView(view);
-
-            view.setLayoutParams(new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
-
-            Drawable icon = getDrawable(R.drawable.anchor_icon);
-            view.setImageDrawable(icon);
-
-            view.setTag(R.id.WIDTH_KEY, icon.getIntrinsicWidth());
-            view.setTag(R.id.HEIGHT_KEY, icon.getIntrinsicHeight());
-            view.setTag(R.id.POINT_KEY, point);
-
-            return view;
-        }
-
-        public void updateLocation(Location location) {
-            lastLocation = location;
-        }
-
-        public boolean canAddAnchor() {
-            return lastLocation != null;
         }
     }
 
