@@ -131,7 +131,7 @@ public class NavigateActivity extends ActionBarActivity {
         iAmHere.setEnabled(anchorsManager.canAddAnchor());
     }
 
-    private void addAnchor(float imageX, float imageY) {
+    private void userIsHere(float imageX, float imageY) {
         iAmHere.setChecked(false);
 
         repositionLocationIcon(imageX, imageY);
@@ -326,7 +326,7 @@ public class NavigateActivity extends ActionBarActivity {
                 float[] xy = { event.getX(), event.getY() };
                 imageViewInv.mapPoints(xy);
 
-                addAnchor(xy[0], xy[1]);
+                userIsHere(xy[0], xy[1]);
             }
         }
     }
