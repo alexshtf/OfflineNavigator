@@ -2,6 +2,7 @@ package com.alexshtf.offlinenavigator;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -191,13 +192,15 @@ public class NavigateActivity extends ActionBarActivity {
 
         public void updateIconsDisplay() {
             for(ImageView icon : anchorIcons) {
-                Point point = (Point) icon.getTag();
+                Point point = (Point) icon.getTag(R.id.POINT_KEY);
+                int w = (Integer) icon.getTag(R.id.WIDTH_KEY);
+                int h = (Integer) icon.getTag(R.id.HEIGHT_KEY);
 
                 float[] xy = { point.getX(), point.getY() };
                 mapImage.getImageViewMatrix().mapPoints(xy);
 
-                icon.setTranslationX(xy[0] - 0.5f * icon.getWidth());
-                icon.setTranslationY(xy[1] - 0.5f * icon.getHeight());
+                icon.setTranslationX(xy[0] - 0.5f * w);
+                icon.setTranslationY(xy[1] - 0.5f * h);
                 icon.setVisibility(View.VISIBLE);
             }
         }
@@ -229,9 +232,13 @@ public class NavigateActivity extends ActionBarActivity {
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             ));
-            view.setImageResource(R.drawable.anchor_icon);
-            view.setTag(point);
-            view.setVisibility(View.INVISIBLE);
+
+            Drawable icon = getDrawable(R.drawable.anchor_icon);
+            view.setImageDrawable(icon);
+
+            view.setTag(R.id.WIDTH_KEY, icon.getIntrinsicWidth());
+            view.setTag(R.id.HEIGHT_KEY, icon.getIntrinsicHeight());
+            view.setTag(R.id.POINT_KEY, point);
 
             return view;
         }

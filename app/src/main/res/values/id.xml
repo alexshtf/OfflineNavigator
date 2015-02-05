@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="WIDTH_KEY" type="id" />
+    <item name="HEIGHT_KEY" type="id" />
+    <item name="POINT_KEY" type="id" />
+</resources>
