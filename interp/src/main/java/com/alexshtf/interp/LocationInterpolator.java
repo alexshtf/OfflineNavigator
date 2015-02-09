@@ -8,22 +8,29 @@ import java.util.List;
 
 
 public class LocationInterpolator {
-    List<Point> onImage = new ArrayList<>();
-    List<Point> onMap = new ArrayList<>();
-    List<Triangle> trianglesOnMap = new ArrayList<>();
+    private List<Point> onImage = new ArrayList<>();
+    private List<Point> onMap = new ArrayList<>();
+    private List<Triangle> trianglesOnMap = new ArrayList<>();
 
-    public Point interpolate(Point p) {
+    public Point interpMapToImage(Point onMap) {
         if (trianglesOnMap.size() == 0)
             return null;
 
-        Triangle t = findNearestTriangle(trianglesOnMap, p);
-        Point result = barycentricInterpolation(t, p, onImage);
-        return result;
+        Triangle t = findNearestTriangle(trianglesOnMap, onMap);
+        Point onImage = barycentricInterpolation(t, onMap, this.onImage);
+        return onImage;
     }
 
     public void addAnchor(Point onImage, Point onMap) {
         this.onImage.add(onImage);
         this.onMap.add(onMap);
+        this.trianglesOnMap = computeTriangulation(this.onMap);
+    }
+
+    public void removeAnchor(Point onImage) {
+        int index = this.onImage.indexOf(onImage);
+        this.onImage.remove(index);
+        this.onMap.remove(index);
         this.trianglesOnMap = computeTriangulation(this.onMap);
     }
 

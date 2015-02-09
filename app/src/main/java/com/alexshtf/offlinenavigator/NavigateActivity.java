@@ -146,7 +146,7 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void displayInterpolatedLocation(Location location) {
-        Point onImage = locationInterpolator.interpolate(asPoint(location));
+        Point onImage = locationInterpolator.interpMapToImage(asPoint(location));
         if (onImage != null)
             repositionLocationIcon(onImage.getX(), onImage.getY());
     }
