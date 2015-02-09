@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -99,6 +100,19 @@ public class NavigateActivity extends ActionBarActivity {
         } catch (IOException e) {
             Log.e("", "Unable to read image", e);
         }
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+
+        if (null != v.getTag(R.id.IS_ANCHOR)) {
+            menu.add(R.string.remove_anchor)
+                    .setIcon(android.R.drawable.ic_delete)
+                    .setOnMenuItemClickListener(new RemoveAnchorListener(anchorsManager, v))
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }
+        else
+            super.onCreateContextMenu(menu, v, menuInfo);
     }
 
     @Override
@@ -254,4 +268,19 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
+    private static class RemoveAnchorListener implements MenuItem.OnMenuItemClickListener {
+        private View anchorView;
+        private AnchorsManager anchorsManager;
+
+        public RemoveAnchorListener(AnchorsManager anchorsManager, View anchorView) {
+            this.anchorView = anchorView;
+            this.anchorsManager = anchorsManager;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            anchorsManager.removeAnchor(anchorView);
+            return true;
+        }
+    }
 }

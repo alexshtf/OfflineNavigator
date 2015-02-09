@@ -2,5 +2,6 @@
 <resources>
     <item name="WIDTH_KEY" type="id" />
     <item name="HEIGHT_KEY" type="id" />
-    <item name="POINT_KEY" type="id" />
+    <item name="POINT_ON_IMAGE_KEY" type="id" />
+    <item name="IS_ANCHOR" type="id" />
 </resources>

@@ -1,6 +1,6 @@
 package com.alexshtf.offlinenavigator;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.view.View;
@@ -25,19 +25,19 @@ class AnchorsManager {
     private final MatrixNotifyingImageView mapImage;
     private final FrameLayout mapLayout;
     private Location lastLocation;
-    private Context context;
+    private Activity activity;
 
-    public AnchorsManager(Context context, MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
+    public AnchorsManager(Activity activity, MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
         this.locationInterpolator = locationInterpolator;
         this.mapImage = mapImage;
         this.mapLayout = mapLayout;
         this.anchorIcons = anchorIconsFrom(locationInterpolator);
-        this.context = context;
+        this.activity = activity;
     }
 
     public void updateIconsDisplay() {
         for(ImageView icon : anchorIcons) {
-            Point point = (Point) icon.getTag(R.id.POINT_KEY);
+            Point point = (Point) icon.getTag(R.id.POINT_ON_IMAGE_KEY);
             int w = (Integer) icon.getTag(R.id.WIDTH_KEY);
             int h = (Integer) icon.getTag(R.id.HEIGHT_KEY);
 
@@ -67,7 +67,7 @@ class AnchorsManager {
     }
 
     private ImageView addAnchorIconAt(Point point) {
-        ImageView view = new ImageView(context);
+        ImageView view = new ImageView(activity);
         mapLayout.addView(view);
 
         view.setLayoutParams(new FrameLayout.LayoutParams(
@@ -75,12 +75,15 @@ class AnchorsManager {
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
 
-        Drawable icon = context.getResources().getDrawable(R.drawable.anchor_icon);
+        Drawable icon = activity.getResources().getDrawable(R.drawable.anchor_icon);
         view.setImageDrawable(icon);
 
         view.setTag(R.id.WIDTH_KEY, icon.getIntrinsicWidth());
         view.setTag(R.id.HEIGHT_KEY, icon.getIntrinsicHeight());
-        view.setTag(R.id.POINT_KEY, point);
+        view.setTag(R.id.POINT_ON_IMAGE_KEY, point);
+        view.setTag(R.id.IS_ANCHOR, true);
+
+        activity.registerForContextMenu(view);
 
         return view;
     }
@@ -91,5 +94,14 @@ class AnchorsManager {
 
     public boolean canAddAnchor() {
         return lastLocation != null;
+    }
+
+    public void removeAnchor(View anchorView) {
+        Point pointOnImage = (Point) anchorView.getTag(R.id.POINT_ON_IMAGE_KEY);
+        if (pointOnImage == null)
+            return;
+
+        locationInterpolator.removeAnchor(pointOnImage);
+        mapLayout.removeView(anchorView);
     }
 }
