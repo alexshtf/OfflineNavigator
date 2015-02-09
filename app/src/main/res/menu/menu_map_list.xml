@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MapListActivity">
     <item android:id="@+id/action_add_from_camera"
-          android:title="@string/from_camera"
+          android:title="@string/add_map_from_camera"
           android:icon="@android:drawable/ic_menu_camera"
           app:showAsAction="always" />
     <item android:id="@+id/action_add_from_gallery"
-          android:title="@string/from_image"
+          android:title="@string/add_map_from_image"
           android:icon="@android:drawable/ic_menu_gallery"
           app:showAsAction="ifRoom" />
 </menu>
