@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 
@@ -44,8 +45,14 @@ public class CreateMapActivity extends ActionBarActivity {
         public boolean onMenuItemClick(MenuItem item) {
             Intent intent = new Intent(CreateMapActivity.this, NavigateActivity.class);
             intent.putExtra(NavigateActivity.MAP_IMAGE_FILE_KEY, getIntent().getStringExtra(MAP_IMAGE_FILE_KEY));
+            intent.putExtra(NavigateActivity.MAP_NAME_KEY, getMapName());
             startActivity(intent);
             return true;
+        }
+
+        private String getMapName() {
+            EditText mapName = (EditText) findViewById(R.id.map_name);
+            return mapName.getText().toString();
         }
     }
 }

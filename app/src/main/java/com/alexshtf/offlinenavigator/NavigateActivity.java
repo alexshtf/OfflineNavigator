@@ -62,12 +62,18 @@ public class NavigateActivity extends ActionBarActivity {
 
         enableDisableControls();
         showImageFromIntent();
+        setTitleFromIntent();
 
         mapImage.setSingleTapListener(new ImageTapListener());
         mapImage.setImageMatrixChangedListener(new ImageMatrixChangedListener(
                 locationIconPositionManager,
                 anchorsManager
         ));
+    }
+
+    private void setTitleFromIntent() {
+        String mapName = getIntent().getStringExtra(MAP_NAME_KEY);
+        setTitle(mapName);
     }
 
     @Override
