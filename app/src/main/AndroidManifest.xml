@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.alexshtf.offlinenavigator" >
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
@@ -23,6 +23,14 @@
         <activity
             android:name=".NavigateActivity"
             android:label="@string/title_activity_navigate"
+            android:parentActivityName=".MapListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.alexshtf.offlinenavigator.MapListActivity" />
+        </activity>
+        <activity
+            android:name=".CreateMapActivity"
+            android:label="@string/title_activity_creat_map"
             android:parentActivityName=".MapListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

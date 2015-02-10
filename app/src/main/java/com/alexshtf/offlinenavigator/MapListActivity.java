@@ -23,9 +23,15 @@ public class MapListActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK)
-            launchNavigateActivity(data.getData());
+            launchCreateMapActivity(data.getData());
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void launchCreateMapActivity(Uri image) {
+        Intent intent = new Intent(this, CreateMapActivity.class);
+        intent.putExtra(CreateMapActivity.MAP_IMAGE_FILE_KEY, image.toString());
+        startActivity(intent);
     }
 
     private void launchAddExistingImage() {
@@ -33,12 +39,6 @@ public class MapListActivity extends ActionBarActivity {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, getString(R.string.select_map_picture)), PICK_IMAGE);
-    }
-
-    private void launchNavigateActivity(Uri image) {
-        Intent intent = new Intent(this, NavigateActivity.class);
-        intent.putExtra(NavigateActivity.MAP_IMAGE_FILE_KEY, image.toString());
-        startActivity(intent);
     }
 
     @Override

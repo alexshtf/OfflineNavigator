@@ -34,6 +34,7 @@ import static com.alexshtf.offlinenavigator.Utils.asPoint;
 public class NavigateActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
+    public static final String MAP_NAME_KEY = "MAP_NAME";
 
     private MatrixNotifyingImageView mapImage;
     private LocationIconPositionManager locationIconPositionManager;
