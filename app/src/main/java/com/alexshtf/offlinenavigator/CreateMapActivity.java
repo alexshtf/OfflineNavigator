@@ -41,12 +41,24 @@ public class CreateMapActivity extends ActionBarActivity {
     }
 
     private class SaveMapListener implements MenuItem.OnMenuItemClickListener {
+        MapsDb mapsDb;
+
+        public SaveMapListener() {
+            mapsDb = new MapsDb(CreateMapActivity.this);
+        }
+
         @Override
         public boolean onMenuItemClick(MenuItem item) {
+            String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_FILE_KEY);
+            String mapName = getMapName();
+
+            mapsDb.addMap(mapName, mapImageFile);
+
             Intent intent = new Intent(CreateMapActivity.this, NavigateActivity.class);
-            intent.putExtra(NavigateActivity.MAP_IMAGE_FILE_KEY, getIntent().getStringExtra(MAP_IMAGE_FILE_KEY));
+            intent.putExtra(NavigateActivity.MAP_IMAGE_FILE_KEY, mapImageFile);
             intent.putExtra(NavigateActivity.MAP_NAME_KEY, getMapName());
             startActivity(intent);
+
             return true;
         }
 

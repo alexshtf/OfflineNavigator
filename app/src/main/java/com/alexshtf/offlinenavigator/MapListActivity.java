@@ -1,22 +1,35 @@
 package com.alexshtf.offlinenavigator;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
 public class MapListActivity extends ActionBarActivity {
 
     private static final int PICK_IMAGE = 1;
+    private MapsDb mapsDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_list);
+
+        mapsDb = new MapsDb(this);
+
+        ListView mapList = (ListView) findViewById(R.id.map_list);
+        mapList.setAdapter(new MapListAdapter(mapsDb.getMaps()));
     }
 
 
@@ -60,6 +73,23 @@ public class MapListActivity extends ActionBarActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private class MapListAdapter extends CursorAdapter {
+        public MapListAdapter(Cursor maps) {
+            super(MapListActivity.this, maps, false);
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return new TextView(context);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            TextView textView = (TextView) view;
+            textView.setText(cursor.getString(cursor.getColumnIndex(MapsDb.MAP_NAME)));
         }
     }
 }
