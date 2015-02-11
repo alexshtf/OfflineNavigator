@@ -37,9 +37,24 @@ class AnchorsManager {
         }
     }
 
-    public void addAnchorAtLastKnownLocation(float imageX, float imageY) {
-        addAnchor(Point.xy(imageX, imageY), asPoint(lastKnownLocation));
+    public AnchorInfo addAnchorAtLastKnownLocation(float imageX, float imageY) {
+        AnchorInfo anchorInfo = new AnchorInfo(
+                Point.xy(imageX, imageY),
+                asPoint(lastKnownLocation)
+        );
+        addAnchor(anchorInfo);
+        return anchorInfo;
     }
+
+    public void addAnchor(AnchorInfo anchorInfo) {
+        addAnchor(anchorInfo.getPoinOnImage(), anchorInfo.getPointOnMap());
+    }
+
+    private void addAnchor(Point pointOnImage, Point pointOnMap) {
+        updateInterpolator(pointOnImage, pointOnMap);
+        updateIconsDisplay();
+    }
+
 
     public void removeAnchor(View anchorView) {
         Point pointOnImage = pointOnImageOf(anchorView);
@@ -57,11 +72,6 @@ class AnchorsManager {
 
     public static boolean isAnchor(View view) {
         return view.getTag(R.id.IS_ANCHOR) != null;
-    }
-
-    private void addAnchor(Point pointOnImage, Point pointOnMap) {
-        updateInterpolator(pointOnImage, pointOnMap);
-        updateIconsDisplay();
     }
 
     private void updateInterpolator(Point onImage, Point pointOnMap) {
@@ -104,6 +114,7 @@ class AnchorsManager {
 
         anchorView.setTranslationX(xy[0] - 0.5f * w);
         anchorView.setTranslationY(xy[1] - 0.5f * h);
+        anchorView.setVisibility(View.VISIBLE);
     }
 
 
@@ -120,7 +131,7 @@ class AnchorsManager {
         anchorView.setTag(R.id.HEIGHT_KEY, icon.getIntrinsicHeight());
     }
 
-    private static Point pointOnImageOf(View anchorView) {
+    public static Point pointOnImageOf(View anchorView) {
         return (Point) anchorView.getTag(R.id.POINT_ON_IMAGE_KEY);
     }
 

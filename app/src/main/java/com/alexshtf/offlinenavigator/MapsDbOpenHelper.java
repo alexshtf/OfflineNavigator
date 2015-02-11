@@ -35,7 +35,7 @@ public class MapsDbOpenHelper extends SQLiteOpenHelper {
                             "map_lat REAL, " +
                             "map_id INTEGER, " +
                             "PRIMARY KEY (image_x, image_y), " +
-                            "FOREIGN KEY (map_id) REFERENCES maps(id)" +
+                            "FOREIGN KEY (map_id) REFERENCES maps(_id)" +
                             ")");
             db.setTransactionSuccessful();
         }

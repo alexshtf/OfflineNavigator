@@ -61,6 +61,9 @@ public class NavigateActivity extends ActionBarActivity {
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .build();
+        googleApiClient.registerConnectionCallbacks(new ConnectionCallbacks());
+        googleApiClient.registerConnectionFailedListener(new LoggingConnectionFailedListener());
+
 
         FrameLayout mapLayout = (FrameLayout) findViewById(R.id.map_layout);
         mapImage = (MatrixNotifyingImageView) findViewById(R.id.map_image);
@@ -80,20 +83,31 @@ public class NavigateActivity extends ActionBarActivity {
         ));
     }
 
-    public long getMapId(Intent intent) {
+    private static long getMapId(Intent intent) {
         return intent.getLongExtra(MAP_ID_KEY, Long.MAX_VALUE);
     }
 
     private void loadStateFromDatabase() {
         SQLiteDatabase db = mapsDbOpenHelper.getWritableDatabase();
         try {
-            MapsDb.MapInfo mapInfo = MapsDb.getMap(db, mapId);
-            setTitle(mapInfo.getName());
-            showImage(mapInfo.getImageUri());
+            loadMapInfo(db);
+            loadAnchors(db);
         }
         finally {
             db.close();
         }
+    }
+
+    private void loadMapInfo(SQLiteDatabase db) {
+        MapInfo mapInfo = MapsDb.getMap(db, mapId);
+        setTitle(mapInfo.getName());
+        showImage(mapInfo.getImageUri());
+    }
+
+    private void loadAnchors(SQLiteDatabase db) {
+        AnchorInfo[] anchors = MapsDb.getAnchors(db, mapId);
+        for(AnchorInfo anchorInfo : anchors)
+            anchorsManager.addAnchor(anchorInfo);
     }
 
     private void showImage(String imageUri) {
@@ -106,24 +120,18 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        LocationInterpolatorStorage.toBundle(locationInterpolator, outState);
-    }
-
-    @Override
-    protected void onStart() {
+    protected void onResume() {
         super.onStart();
-        googleApiClient.registerConnectionCallbacks(new ConnectionCallback());
-        googleApiClient.registerConnectionFailedListener(new LoggingConnectionFailedCallback());
 
         Log.i("", "Connecting to Google Location API client");
         googleApiClient.connect();
     }
 
     @Override
-    protected void onStop() {
+    protected void onPause() {
+        Log.i("", "Disconnecting google Location API client");
         googleApiClient.disconnect();
+
         super.onStop();
     }
 
@@ -148,7 +156,8 @@ public class NavigateActivity extends ActionBarActivity {
         iAmHere.setChecked(false);
 
         repositionLocationIcon(imageX, imageY);
-        anchorsManager.addAnchorAtLastKnownLocation(imageX, imageY);
+        AnchorInfo anchorInfo = anchorsManager.addAnchorAtLastKnownLocation(imageX, imageY);
+        MapsDb.addAnchor(mapsDbOpenHelper, mapId, anchorInfo);
     }
 
     private void repositionLocationIcon(float imageX, float imageY) {
@@ -212,7 +221,7 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-    private class ConnectionCallback implements GoogleApiClient.ConnectionCallbacks {
+    private class ConnectionCallbacks implements GoogleApiClient.ConnectionCallbacks {
         @Override
         public void onConnected(Bundle bundle) {
             Log.i("", "Google Location API connected. Requesting location updates");
@@ -247,7 +256,7 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-    private static class LoggingConnectionFailedCallback implements GoogleApiClient.OnConnectionFailedListener {
+    private static class LoggingConnectionFailedListener implements GoogleApiClient.OnConnectionFailedListener {
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
             Log.e("", "Google Location API connection failed " + connectionResult.toString());
@@ -271,7 +280,7 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-    private static class RemoveAnchorListener implements MenuItem.OnMenuItemClickListener {
+    private class RemoveAnchorListener implements MenuItem.OnMenuItemClickListener {
         private View anchorView;
         private AnchorsManager anchorsManager;
 
@@ -283,6 +292,7 @@ public class NavigateActivity extends ActionBarActivity {
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             anchorsManager.removeAnchor(anchorView);
+            MapsDb.removeAnchor(mapsDbOpenHelper, mapId, AnchorsManager.pointOnImageOf(anchorView));
             return true;
         }
     }

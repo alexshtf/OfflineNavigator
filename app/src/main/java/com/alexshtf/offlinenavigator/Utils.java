@@ -5,6 +5,7 @@ import android.location.Location;
 import com.alexshtf.interp.Point;
 
 public class Utils {
+    @SafeVarargs
     public static <T> T[] arrayOf(T... items) {
         return items;
     }
