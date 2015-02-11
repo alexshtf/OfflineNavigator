@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,14 +24,18 @@ public class MapListActivity extends ActionBarActivity {
 
     private static final int PICK_IMAGE = 1;
     private MapsDbOpenHelper mapsDb;
-    private ListView mapList;
+    private MapListAdapter listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_list);
+
         mapsDb = MapsDbOpenHelper.from(this);
-        mapList = (ListView) findViewById(R.id.map_list);
+        listAdapter = new MapListAdapter(mapsDb.getReadableDatabase());
+
+        ListView mapList = (ListView) findViewById(R.id.map_list);
+        mapList.setAdapter(listAdapter);
         mapList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -48,7 +53,7 @@ public class MapListActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mapList.setAdapter(new MapListAdapter(mapsDb.getReadableDatabase()));
+        listAdapter.notifyDataSetInvalidated();
     }
 
     private void launchAddExistingImage() {
@@ -113,19 +118,51 @@ public class MapListActivity extends ActionBarActivity {
 
     private class MapListAdapter extends CursorAdapter {
 
+        private final SQLiteDatabase db;
+
         public MapListAdapter(SQLiteDatabase db) {
             super(MapListActivity.this, MapsDb.getAllMaps(db), false);
+            this.db = db;
         }
 
         @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            return new TextView(context);
+        public View newView(Context context, final Cursor cursor, ViewGroup parent) {
+            View view = LayoutInflater.from(context).inflate(R.layout.map_list_item, parent, false);
+
+            view.setTag(new MapItemTag(
+                    (TextView) view.findViewById(R.id.map_name_view)
+            ));
+
+            final long mapId = cursor.getLong(cursor.getColumnIndex("_id"));
+            view.findViewById(R.id.delete_map_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MapsDb.deleteMap(mapsDb, mapId);
+                    changeCursor(MapsDb.getAllMaps(db));
+                }
+            });
+
+            bindView(view, context, cursor);
+
+            return view;
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            TextView textView = (TextView) view;
-            textView.setText(MapsDb.getMapInfo(cursor).getName());
+            MapItemTag tag = (MapItemTag) view.getTag();
+            tag.getMapNameView().setText(MapsDb.getMapInfo(cursor).getName());
+        }
+    }
+
+    private static class MapItemTag {
+        private final TextView mapNameView;
+
+        public MapItemTag(TextView mapNameView) {
+            this.mapNameView = mapNameView;
+        }
+
+        public TextView getMapNameView() {
+            return mapNameView;
         }
     }
 }

@@ -9,6 +9,7 @@ import com.alexshtf.interp.Point;
 import static com.alexshtf.interp.Point.xy;
 import static com.alexshtf.offlinenavigator.Utils.arrayOf;
 import static com.alexshtf.offlinenavigator.Utils.stringArrayOf;
+import static java.lang.String.format;
 
 public class MapsDb {
     public static final String MAPS_TABLE = "maps";
@@ -57,16 +58,11 @@ public class MapsDb {
     }
 
     public static long addMap(MapsDbOpenHelper mapsDb, String name, String imageUri) {
+        ContentValues values = new ContentValues();
+        values.put(MAP_NAME, name);
+        values.put(MAP_IMAGE_URI, imageUri);
         SQLiteDatabase db = mapsDb.getWritableDatabase();
-        try {
-            ContentValues values = new ContentValues();
-            values.put(MAP_NAME, name);
-            values.put(MAP_IMAGE_URI, imageUri);
-            return db.insert(MAPS_TABLE, null, values);
-        }
-        finally {
-            db.close();
-        }
+        return db.insert(MAPS_TABLE, null, values);
     }
 
     public static AnchorInfo[] getAnchors(SQLiteDatabase db, long mapId) {
@@ -97,33 +93,36 @@ public class MapsDb {
     }
 
     public static void addAnchor(MapsDbOpenHelper mapsDbOpenHelper, long mapId, AnchorInfo anchorInfo) {
+        ContentValues values = new ContentValues();
+
+        values.put(ANCHOR_MAP_ID, mapId);
+        values.put(ANCHOR_IMAGE_X, anchorInfo.getPoinOnImage().getX());
+        values.put(ANCHOR_IMAGE_Y, anchorInfo.getPoinOnImage().getY());
+        values.put(ANCHOR_MAP_LONG, anchorInfo.getPointOnMap().getX());
+        values.put(ANCHOR_MAP_LAT, anchorInfo.getPointOnMap().getY());
+
         SQLiteDatabase db = mapsDbOpenHelper.getWritableDatabase();
-        try {
-            ContentValues values = new ContentValues();
-
-            values.put(ANCHOR_MAP_ID, mapId);
-            values.put(ANCHOR_IMAGE_X, anchorInfo.getPoinOnImage().getX());
-            values.put(ANCHOR_IMAGE_Y, anchorInfo.getPoinOnImage().getY());
-            values.put(ANCHOR_MAP_LONG, anchorInfo.getPointOnMap().getX());
-            values.put(ANCHOR_MAP_LAT, anchorInfo.getPointOnMap().getY());
-
-            db.insert(ANCHORS_TABLE, null, values);
-        }
-        finally {
-            db.close();
-        }
+        db.insert(ANCHORS_TABLE, null, values);
     }
 
     public static void removeAnchor(MapsDbOpenHelper mapsDbOpenHelper, long mapId, Point point) {
         SQLiteDatabase db = mapsDbOpenHelper.getWritableDatabase();
+        db.delete(ANCHORS_TABLE,
+                format("%s == ? AND %s == ? AND %s == ?", ANCHOR_MAP_ID, ANCHOR_IMAGE_X, ANCHOR_IMAGE_Y),
+                stringArrayOf(mapId, point.getX(), point.getY())
+        );
+    }
+
+    public static void deleteMap(MapsDbOpenHelper mapsDb, long mapId) {
+        SQLiteDatabase db = mapsDb.getWritableDatabase();
         try {
-           db.delete(ANCHORS_TABLE,
-                    String.format("%s == ? AND %s == ? AND %s == ?", ANCHOR_MAP_ID, ANCHOR_IMAGE_X, ANCHOR_IMAGE_Y),
-                    stringArrayOf(mapId, point.getX(), point.getY())
-           );
+            db.beginTransaction();
+            db.delete(MAPS_TABLE, format("%s == ?", MAP_ID), stringArrayOf(mapId));
+            db.delete(ANCHORS_TABLE, format("%s == ?", ANCHOR_MAP_ID), stringArrayOf(mapId));
+            db.setTransactionSuccessful();
         }
         finally {
-            db.close();
+            db.endTransaction();
         }
     }
 }

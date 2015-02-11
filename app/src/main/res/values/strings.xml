@@ -17,5 +17,6 @@
     <string name="map_image_preview">Map image preview</string>
     <string name="save_map">Save map</string>
     <string name="must_enter_map_name">You must enter map name</string>
+    <string name="delete_map">Delete map</string>
 
 </resources>

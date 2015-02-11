@@ -74,7 +74,7 @@ public class CreateMapActivity extends ActionBarActivity {
         }
 
         private String getMapName() {
-            EditText mapName = (EditText) findViewById(R.id.map_name);
+            EditText mapName = (EditText) findViewById(R.id.map_name_view);
             return mapName.getText().toString().trim();
         }
     }
