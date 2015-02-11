@@ -70,7 +70,7 @@ public class NavigateActivity extends ActionBarActivity {
         iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
 
         locationIconPositionManager = new LocationIconPositionManager(mapImage, (ImageView) findViewById(R.id.location_icon));
-        locationInterpolator = LocationInterpolatorStorage.fromBundle(savedInstanceState);
+        locationInterpolator = new LocationInterpolator();
         anchorsManager = new AnchorsManager(this, mapImage, mapLayout, locationInterpolator);
 
         loadStateFromDatabase();
