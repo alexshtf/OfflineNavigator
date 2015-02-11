@@ -1,5 +1,7 @@
 package com.alexshtf.offlinenavigator;
 
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.location.Location;
@@ -28,25 +30,33 @@ import java.io.IOException;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
+import static com.alexshtf.offlinenavigator.AnchorsManager.isAnchor;
 import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
 
 public class NavigateActivity extends ActionBarActivity {
 
-    public static final String MAP_IMAGE_URL_KEY = "MAP_IMAGE_FILE";
-    public static final String MAP_NAME_KEY = "MAP_NAME";
+    public static final String MAP_ID_KEY = "MAP_ID";
+
+    private long mapId;
+    private MapsDbOpenHelper mapsDbOpenHelper;
 
     private MatrixNotifyingImageView mapImage;
-    private LocationIconPositionManager locationIconPositionManager;
     private ToggleButton iAmHere;
-    private GoogleApiClient googleApiClient;
+
+    private LocationIconPositionManager locationIconPositionManager;
     private LocationInterpolator locationInterpolator;
     private AnchorsManager anchorsManager;
+    private GoogleApiClient googleApiClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
+
+        mapId = getMapId(getIntent());
+        mapsDbOpenHelper = MapsDbOpenHelper.from(this);
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -60,9 +70,8 @@ public class NavigateActivity extends ActionBarActivity {
         locationInterpolator = LocationInterpolatorStorage.fromBundle(savedInstanceState);
         anchorsManager = new AnchorsManager(this, mapImage, mapLayout, locationInterpolator);
 
+        loadStateFromDatabase();
         enableDisableControls();
-        showImageFromIntent();
-        setTitleFromIntent();
 
         mapImage.setSingleTapListener(new ImageTapListener());
         mapImage.setImageMatrixChangedListener(new ImageMatrixChangedListener(
@@ -71,9 +80,29 @@ public class NavigateActivity extends ActionBarActivity {
         ));
     }
 
-    private void setTitleFromIntent() {
-        String mapName = getIntent().getStringExtra(MAP_NAME_KEY);
-        setTitle(mapName);
+    public long getMapId(Intent intent) {
+        return intent.getLongExtra(MAP_ID_KEY, Long.MAX_VALUE);
+    }
+
+    private void loadStateFromDatabase() {
+        SQLiteDatabase db = mapsDbOpenHelper.getWritableDatabase();
+        try {
+            MapsDb.MapInfo mapInfo = MapsDb.getMap(db, mapId);
+            setTitle(mapInfo.getName());
+            showImage(mapInfo.getImageUri());
+        }
+        finally {
+            db.close();
+        }
+    }
+
+    private void showImage(String imageUri) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(imageUri));
+            mapImage.setImageBitmap(bitmap, null, 1, 10);
+        } catch (IOException e) {
+            Log.e("", "Unable to read image", e);
+        }
     }
 
     @Override
@@ -98,20 +127,10 @@ public class NavigateActivity extends ActionBarActivity {
         super.onStop();
     }
 
-    private void showImageFromIntent() {
-        String imageFile = getIntent().getStringExtra(MAP_IMAGE_URL_KEY);
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(imageFile));
-            mapImage.setImageBitmap(bitmap, null, 1, 10);
-        } catch (IOException e) {
-            Log.e("", "Unable to read image", e);
-        }
-    }
-
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 
-        if (null != v.getTag(R.id.IS_ANCHOR)) {
+        if (isAnchor(v)) {
             menu.add(R.string.remove_anchor)
                     .setIcon(android.R.drawable.ic_delete)
                     .setOnMenuItemClickListener(new RemoveAnchorListener(anchorsManager, v))
@@ -129,7 +148,7 @@ public class NavigateActivity extends ActionBarActivity {
         iAmHere.setChecked(false);
 
         repositionLocationIcon(imageX, imageY);
-        anchorsManager.addAnchor(imageX, imageY);
+        anchorsManager.addAnchorAtLastKnownLocation(imageX, imageY);
     }
 
     private void repositionLocationIcon(float imageX, float imageY) {

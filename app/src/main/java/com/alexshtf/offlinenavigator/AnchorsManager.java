@@ -11,67 +11,66 @@ import android.widget.ImageView;
 import com.alexshtf.interp.LocationInterpolator;
 import com.alexshtf.interp.Point;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
-/**
-* Created by alexshtf on 05/02/2015.
-*/
 class AnchorsManager {
     private final LocationInterpolator locationInterpolator;
-    private final List<ImageView> anchorIcons;
     private final MatrixNotifyingImageView mapImage;
     private final FrameLayout mapLayout;
-    private Location lastLocation;
+    private Location lastKnownLocation;
     private Activity activity;
 
     public AnchorsManager(Activity activity, MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
         this.locationInterpolator = locationInterpolator;
         this.mapImage = mapImage;
         this.mapLayout = mapLayout;
-        this.anchorIcons = anchorIconsFrom(locationInterpolator);
         this.activity = activity;
+
+        createAnchorIcons(locationInterpolator);
     }
 
     public void updateIconsDisplay() {
-        for(ImageView icon : anchorIcons) {
-            Point point = (Point) icon.getTag(R.id.POINT_ON_IMAGE_KEY);
-            int w = (Integer) icon.getTag(R.id.WIDTH_KEY);
-            int h = (Integer) icon.getTag(R.id.HEIGHT_KEY);
-
-            float[] xy = { point.getX(), point.getY() };
-            mapImage.getImageViewMatrix().mapPoints(xy);
-
-            icon.setTranslationX(xy[0] - 0.5f * w);
-            icon.setTranslationY(xy[1] - 0.5f * h);
-            icon.setVisibility(View.VISIBLE);
+        for(int i = 0; i < mapLayout.getChildCount(); ++i) {
+            View child = mapLayout.getChildAt(i);
+            if (isAnchor(child))
+                updateIconDisplay(child);
         }
     }
 
-    public void addAnchor(float imageX, float imageY) {
-        Point pointOnImage = Point.xy(imageX, imageY);
-        addToInterpolator(pointOnImage);
-        addAnchorIcon(pointOnImage);
+    public void addAnchorAtLastKnownLocation(float imageX, float imageY) {
+        addAnchor(Point.xy(imageX, imageY), asPoint(lastKnownLocation));
+    }
+
+    public void removeAnchor(View anchorView) {
+        Point pointOnImage = pointOnImageOf(anchorView);
+        locationInterpolator.removeAnchor(pointOnImage);
+        mapLayout.removeView(anchorView);
+    }
+
+    public void updateLocation(Location location) {
+        lastKnownLocation = location;
+    }
+
+    public boolean canAddAnchor() {
+        return lastKnownLocation != null;
+    }
+
+    public static boolean isAnchor(View view) {
+        return view.getTag(R.id.IS_ANCHOR) != null;
+    }
+
+    private void addAnchor(Point pointOnImage, Point pointOnMap) {
+        updateInterpolator(pointOnImage, pointOnMap);
         updateIconsDisplay();
     }
 
-    private void addAnchorIcon(Point onImage) {
-        anchorIcons.add(addAnchorIconAt(onImage));
+    private void updateInterpolator(Point onImage, Point pointOnMap) {
+        locationInterpolator.addAnchor(onImage, pointOnMap);
     }
 
-    private void addToInterpolator(Point onImage) {
-        locationInterpolator.addAnchor(onImage, asPoint(lastLocation));
-    }
-
-    private List<ImageView> anchorIconsFrom(LocationInterpolator li) {
-        List<ImageView> result = new ArrayList<>();
-
+    private void createAnchorIcons(LocationInterpolator li) {
         for(Point point : li.getPointsOnImage())
-            result.add(addAnchorIconAt(point));
-
-        return result;
+            addAnchorIconAt(point);
     }
 
     private ImageView addAnchorIconAt(Point point) {
@@ -86,30 +85,50 @@ class AnchorsManager {
         Drawable icon = activity.getResources().getDrawable(R.drawable.anchor_icon);
         view.setImageDrawable(icon);
 
-        view.setTag(R.id.WIDTH_KEY, icon.getIntrinsicWidth());
-        view.setTag(R.id.HEIGHT_KEY, icon.getIntrinsicHeight());
-        view.setTag(R.id.POINT_ON_IMAGE_KEY, point);
-        view.setTag(R.id.IS_ANCHOR, true);
+        setIconDimensions(view, icon);
+        setPointOnImage(view, point);
+        markAsAnchor(view);
 
         activity.registerForContextMenu(view);
 
         return view;
     }
 
-    public void updateLocation(Location location) {
-        lastLocation = location;
+    private void updateIconDisplay(View anchorView) {
+        Point point = pointOnImageOf(anchorView);
+        int w = imageWidthOf(anchorView);
+        int h = imageHeightOf(anchorView);
+
+        float[] xy = { point.getX(), point.getY() };
+        mapImage.getImageViewMatrix().mapPoints(xy);
+
+        anchorView.setTranslationX(xy[0] - 0.5f * w);
+        anchorView.setTranslationY(xy[1] - 0.5f * h);
     }
 
-    public boolean canAddAnchor() {
-        return lastLocation != null;
+
+    private static void markAsAnchor(View anchorView) {
+        anchorView.setTag(R.id.IS_ANCHOR, true);
     }
 
-    public void removeAnchor(View anchorView) {
-        Point pointOnImage = (Point) anchorView.getTag(R.id.POINT_ON_IMAGE_KEY);
-        if (pointOnImage == null)
-            return;
+    private static void setPointOnImage(View anchorView, Point p) {
+        anchorView.setTag(R.id.POINT_ON_IMAGE_KEY, p);
+    }
 
-        locationInterpolator.removeAnchor(pointOnImage);
-        mapLayout.removeView(anchorView);
+    private static void setIconDimensions(View anchorView, Drawable icon) {
+        anchorView.setTag(R.id.WIDTH_KEY, icon.getIntrinsicWidth());
+        anchorView.setTag(R.id.HEIGHT_KEY, icon.getIntrinsicHeight());
+    }
+
+    private static Point pointOnImageOf(View anchorView) {
+        return (Point) anchorView.getTag(R.id.POINT_ON_IMAGE_KEY);
+    }
+
+    private static int imageHeightOf(View anchorView) {
+        return (Integer) anchorView.getTag(R.id.HEIGHT_KEY);
+    }
+
+    private static int imageWidthOf(View anchorView) {
+        return (Integer) anchorView.getTag(R.id.WIDTH_KEY);
     }
 }

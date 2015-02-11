@@ -20,13 +20,19 @@ import android.widget.Toast;
 public class MapListActivity extends ActionBarActivity {
 
     private static final int PICK_IMAGE = 1;
-    private MapsDb mapsDb;
+    private MapsDbOpenHelper mapsDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_list);
-        mapsDb = MapsDb.from(this);
+        mapsDb = MapsDbOpenHelper.from(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mapsDb.close();
+        super.onDestroy();
     }
 
     @Override
@@ -46,7 +52,7 @@ public class MapListActivity extends ActionBarActivity {
 
     private void launchCreateMapActivity(Uri image) {
         Intent intent = new Intent(this, CreateMapActivity.class);
-        intent.putExtra(CreateMapActivity.MAP_IMAGE_URL_KEY, image.toString());
+        intent.putExtra(CreateMapActivity.MAP_IMAGE_URI_KEY, image.toString());
         startActivity(intent);
     }
 
@@ -82,7 +88,7 @@ public class MapListActivity extends ActionBarActivity {
     private class MapListAdapter extends CursorAdapter {
 
         public MapListAdapter(SQLiteDatabase db) {
-            super(MapListActivity.this, MapsDb.getMaps(db), false);
+            super(MapListActivity.this, MapsDb.getAllMaps(db), false);
         }
 
         @Override
@@ -93,7 +99,7 @@ public class MapListActivity extends ActionBarActivity {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             TextView textView = (TextView) view;
-            textView.setText(cursor.getString(cursor.getColumnIndex(MapsDb.MAP_NAME)));
+            textView.setText(MapsDb.getMapInfo(cursor).getName());
         }
     }
 }

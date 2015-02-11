@@ -1,83 +1,78 @@
 package com.alexshtf.offlinenavigator;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.alexshtf.offlinenavigator.Utils.arrayOf;
+import static com.alexshtf.offlinenavigator.Utils.stringArrayOf;
 
-public class MapsDb extends SQLiteOpenHelper {
-
+public class MapsDb {
     public static final String MAP_ID = "_id";
     public static final String MAP_NAME = "name";
-    public static final String MAP_IMAGE_URL = "image_url";
-
+    public static final String MAP_IMAGE_URI = "image_url";
     public static final String MAPS_TABLE = "maps";
 
-    private static final int CURRENT_VERSION = 1;
-    private static final String DB_NAME = "Maps";
-    private static final SQLiteDatabase.CursorFactory DEFAULT_CURSOR_FACTORY = null;
-
-    public MapsDb(Context context) {
-        super(context, DB_NAME, DEFAULT_CURSOR_FACTORY, CURRENT_VERSION);
-    }
-
-    public static MapsDb from(Context context) {
-        return new MapsDb(context);
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.beginTransaction();
-        try {
-            db.execSQL(
-                    "CREATE TABLE maps(" +
-                            "_id INTEGER PRIMARY KEY, " +
-                            "name TEXT NOT NULL, " +
-                            "image_url TEXT NOT NULL" +
-                            ")");
-            db.execSQL(
-                    "CREATE TABLE anchors(" +
-                            "image_x REAL, " +
-                            "image_y REAL, " +
-                            "map_long REAL, " +
-                            "map_lat REAL, " +
-                            "map_id INTEGER, " +
-                            "PRIMARY KEY (image_x, image_y), " +
-                            "FOREIGN KEY (map_id) REFERENCES maps(id)" +
-                            ")");
-            db.setTransactionSuccessful();
-        }
-        finally {
-            db.endTransaction();
-        }
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // do nothing. We currently don't have any previous database versions.
-    }
-
-    public static Cursor getMaps(SQLiteDatabase db) {
+    public static Cursor getAllMaps(SQLiteDatabase db) {
         return db.query(
-                MAPS_TABLE, arrayOf(MAP_ID, MAP_NAME, MAP_IMAGE_URL),
+                MAPS_TABLE, arrayOf(MAP_ID, MAP_NAME, MAP_IMAGE_URI),
                 null, null, null, null, null
         );
     }
 
+    public static MapInfo getMapInfo(Cursor cursor) {
+        String name = cursor.getString(cursor.getColumnIndex(MAP_NAME));
+        String imageUrl = cursor.getString(cursor.getColumnIndex(MAP_IMAGE_URI));
 
-    public long addMap(String name, String imageUrl) {
-        SQLiteDatabase db = getWritableDatabase();
+        return new MapInfo(name, imageUrl);
+    }
+
+    public static MapInfo getMap(SQLiteDatabase db, long mapId) {
+        Cursor cursor = db.query(
+                MAPS_TABLE, arrayOf(MAP_NAME, MAP_IMAGE_URI),
+                "_id == ?", stringArrayOf(mapId),
+                null, null, null
+        );
+
+        try {
+            if (cursor.moveToNext())
+                return getMapInfo(cursor);
+            else
+                throw new RuntimeException("Did not find map with the specified ID");
+        }
+        finally {
+            cursor.close();
+        }
+    }
+
+    public static long addMap(MapsDbOpenHelper mapsDb, String name, String imageUri) {
+        SQLiteDatabase db = mapsDb.getWritableDatabase();
         try {
             ContentValues values = new ContentValues();
             values.put(MAP_NAME, name);
-            values.put(MAP_IMAGE_URL, imageUrl);
+            values.put(MAP_IMAGE_URI, imageUri);
             return db.insert(MAPS_TABLE, null, values);
         }
         finally {
             db.close();
+        }
+    }
+
+    public static class MapInfo {
+        private final String name;
+        private final String imageUri;
+
+        public MapInfo(String name, String imageUri) {
+            this.name = name;
+            this.imageUri = imageUri;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getImageUri() {
+            return imageUri;
         }
     }
 }

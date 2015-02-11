@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 public class CreateMapActivity extends ActionBarActivity {
 
-    public static final String MAP_IMAGE_URL_KEY = "MAP_IMAGE_URL_KEY";
+    public static final String MAP_IMAGE_URI_KEY = "MAP_IMAGE_URI_KEY";
 
 
     @Override
@@ -24,7 +24,7 @@ public class CreateMapActivity extends ActionBarActivity {
     }
 
     private void showImageFromIntent() {
-        String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_URL_KEY);
+        String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_URI_KEY);
         Uri mapImageUri = Uri.parse(mapImageFile);
 
         ImageView mapImage = (ImageView) findViewById(R.id.map_image_preview);
@@ -45,32 +45,31 @@ public class CreateMapActivity extends ActionBarActivity {
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             String mapName = getMapName();
-            String imageUrl = getIntent().getStringExtra(MAP_IMAGE_URL_KEY);
+            String imageUri = getIntent().getStringExtra(MAP_IMAGE_URI_KEY);
 
             if (mapName.isEmpty())
                 notifyMustEnterMapName();
             else
-                saveMapAndNavigate(mapName, imageUrl);
+                startNavigateActivity(saveMap(mapName, imageUri));
 
             return true;
         }
 
-        private void saveMapAndNavigate(String mapName, String imageFile) {
-            saveMap(mapName, imageFile);
-            startNavigateActivity(mapName, imageFile);
-        }
-
-        private void startNavigateActivity(String mapName, String imageFile) {
+        private void startNavigateActivity(long mapId) {
             Intent intent = new Intent(CreateMapActivity.this, NavigateActivity.class);
-            intent.putExtra(NavigateActivity.MAP_IMAGE_URL_KEY, imageFile);
-            intent.putExtra(NavigateActivity.MAP_NAME_KEY, mapName);
-
+            intent.putExtra(NavigateActivity.MAP_ID_KEY, mapId);
             startActivity(intent);
             finish();
         }
 
-        private void saveMap(String mapName, String imageFile) {
-            MapsDb.from(CreateMapActivity.this).addMap(mapName, imageFile);
+        private long saveMap(String mapName, String imageUri) {
+            MapsDbOpenHelper dbOpenHelper = MapsDbOpenHelper.from(CreateMapActivity.this);
+            try {
+                return MapsDb.addMap(dbOpenHelper, mapName, imageUri);
+            }
+            finally {
+                dbOpenHelper.close();
+            }
         }
 
         private void notifyMustEnterMapName() {
