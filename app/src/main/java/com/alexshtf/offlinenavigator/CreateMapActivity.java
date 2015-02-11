@@ -35,7 +35,7 @@ public class CreateMapActivity extends ActionBarActivity {
         menu.add(R.string.save_map)
                 .setIcon(android.R.drawable.ic_input_add)
                 .setOnMenuItemClickListener(new SaveMapListener())
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
         return true;
     }
@@ -47,6 +47,7 @@ public class CreateMapActivity extends ActionBarActivity {
             intent.putExtra(NavigateActivity.MAP_IMAGE_FILE_KEY, getIntent().getStringExtra(MAP_IMAGE_FILE_KEY));
             intent.putExtra(NavigateActivity.MAP_NAME_KEY, getMapName());
             startActivity(intent);
+            finish();
             return true;
         }
 
