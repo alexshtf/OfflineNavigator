@@ -1,6 +1,5 @@
 package com.alexshtf.offlinenavigator;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -56,9 +55,7 @@ public class CreateMapActivity extends ActionBarActivity {
         }
 
         private void startNavigateActivity(long mapId) {
-            Intent intent = new Intent(CreateMapActivity.this, NavigateActivity.class);
-            intent.putExtra(NavigateActivity.MAP_ID_KEY, mapId);
-            startActivity(intent);
+            NavigateActivity.start(CreateMapActivity.this, mapId);
             finish();
         }
 
@@ -81,4 +78,5 @@ public class CreateMapActivity extends ActionBarActivity {
             return mapName.getText().toString().trim();
         }
     }
+
 }

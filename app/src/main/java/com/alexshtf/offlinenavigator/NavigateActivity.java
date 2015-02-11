@@ -1,5 +1,6 @@
 package com.alexshtf.offlinenavigator;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -48,6 +49,12 @@ public class NavigateActivity extends ActionBarActivity {
     private LocationInterpolator locationInterpolator;
     private AnchorsManager anchorsManager;
     private GoogleApiClient googleApiClient;
+
+    static void start(Activity parent, long mapId) {
+        Intent intent = new Intent(parent, NavigateActivity.class);
+        intent.putExtra(MAP_ID_KEY, mapId);
+        parent.startActivity(intent);
+    }
 
 
     @Override
