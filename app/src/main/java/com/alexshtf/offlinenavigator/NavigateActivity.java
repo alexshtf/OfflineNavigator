@@ -298,8 +298,8 @@ public class NavigateActivity extends ActionBarActivity {
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            anchorsManager.removeAnchor(anchorView);
             MapsDb.removeAnchor(mapsDbOpenHelper, mapId, AnchorsManager.pointOnImageOf(anchorView));
+            anchorsManager.removeAnchor(anchorView);
             return true;
         }
     }

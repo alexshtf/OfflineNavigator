@@ -7,10 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.alexshtf.interp.LocationInterpolator;
 import com.alexshtf.interp.Point;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
 class AnchorsManager {
@@ -25,8 +27,6 @@ class AnchorsManager {
         this.mapImage = mapImage;
         this.mapLayout = mapLayout;
         this.activity = activity;
-
-        createAnchorIcons(locationInterpolator);
     }
 
     public void updateIconsDisplay() {
@@ -51,6 +51,7 @@ class AnchorsManager {
     }
 
     private void addAnchor(Point pointOnImage, Point pointOnMap) {
+        addAnchorIconAt(pointOnImage);
         updateInterpolator(pointOnImage, pointOnMap);
         updateIconsDisplay();
     }
@@ -78,18 +79,11 @@ class AnchorsManager {
         locationInterpolator.addAnchor(onImage, pointOnMap);
     }
 
-    private void createAnchorIcons(LocationInterpolator li) {
-        for(Point point : li.getPointsOnImage())
-            addAnchorIconAt(point);
-    }
-
-    private ImageView addAnchorIconAt(Point point) {
+    private void addAnchorIconAt(Point point) {
         ImageView view = new ImageView(activity);
-        mapLayout.addView(view);
-
-        view.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+        view.setLayoutParams(new RelativeLayout.LayoutParams(
+                WRAP_CONTENT,
+                WRAP_CONTENT
         ));
 
         Drawable icon = activity.getResources().getDrawable(R.drawable.anchor_icon);
@@ -100,8 +94,7 @@ class AnchorsManager {
         markAsAnchor(view);
 
         activity.registerForContextMenu(view);
-
-        return view;
+        mapLayout.addView(view);
     }
 
     private void updateIconDisplay(View anchorView) {
