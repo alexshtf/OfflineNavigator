@@ -3,6 +3,7 @@ package com.alexshtf.offlinenavigator;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -25,13 +26,15 @@ public class MapListActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_list);
-
-        mapsDb = new MapsDb(this);
-
-        ListView mapList = (ListView) findViewById(R.id.map_list);
-        mapList.setAdapter(new MapListAdapter(mapsDb.getMaps()));
+        mapsDb = MapsDb.from(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ListView mapList = (ListView) findViewById(R.id.map_list);
+        mapList.setAdapter(new MapListAdapter(mapsDb.getReadableDatabase()));
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -43,7 +46,7 @@ public class MapListActivity extends ActionBarActivity {
 
     private void launchCreateMapActivity(Uri image) {
         Intent intent = new Intent(this, CreateMapActivity.class);
-        intent.putExtra(CreateMapActivity.MAP_IMAGE_FILE_KEY, image.toString());
+        intent.putExtra(CreateMapActivity.MAP_IMAGE_URL_KEY, image.toString());
         startActivity(intent);
     }
 
@@ -77,8 +80,9 @@ public class MapListActivity extends ActionBarActivity {
     }
 
     private class MapListAdapter extends CursorAdapter {
-        public MapListAdapter(Cursor maps) {
-            super(MapListActivity.this, maps, false);
+
+        public MapListAdapter(SQLiteDatabase db) {
+            super(MapListActivity.this, MapsDb.getMaps(db), false);
         }
 
         @Override

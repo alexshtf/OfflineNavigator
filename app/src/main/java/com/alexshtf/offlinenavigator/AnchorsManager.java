@@ -51,10 +51,18 @@ class AnchorsManager {
     }
 
     public void addAnchor(float imageX, float imageY) {
-        Point onImage = Point.xy(imageX, imageY);
-        locationInterpolator.addAnchor(onImage, asPoint(lastLocation));
-        anchorIcons.add(addAnchorIconAt(onImage));
+        Point pointOnImage = Point.xy(imageX, imageY);
+        addToInterpolator(pointOnImage);
+        addAnchorIcon(pointOnImage);
         updateIconsDisplay();
+    }
+
+    private void addAnchorIcon(Point onImage) {
+        anchorIcons.add(addAnchorIconAt(onImage));
+    }
+
+    private void addToInterpolator(Point onImage) {
+        locationInterpolator.addAnchor(onImage, asPoint(lastLocation));
     }
 
     private List<ImageView> anchorIconsFrom(LocationInterpolator li) {

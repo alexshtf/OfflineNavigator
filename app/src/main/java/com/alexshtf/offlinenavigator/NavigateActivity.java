@@ -33,7 +33,7 @@ import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
 public class NavigateActivity extends ActionBarActivity {
 
-    public static final String MAP_IMAGE_FILE_KEY = "MAP_IMAGE_FILE";
+    public static final String MAP_IMAGE_URL_KEY = "MAP_IMAGE_FILE";
     public static final String MAP_NAME_KEY = "MAP_NAME";
 
     private MatrixNotifyingImageView mapImage;
@@ -99,7 +99,7 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void showImageFromIntent() {
-        String imageFile = getIntent().getStringExtra(MAP_IMAGE_FILE_KEY);
+        String imageFile = getIntent().getStringExtra(MAP_IMAGE_URL_KEY);
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(imageFile));
             mapImage.setImageBitmap(bitmap, null, 1, 10);

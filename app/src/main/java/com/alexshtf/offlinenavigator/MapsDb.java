@@ -24,6 +24,10 @@ public class MapsDb extends SQLiteOpenHelper {
         super(context, DB_NAME, DEFAULT_CURSOR_FACTORY, CURRENT_VERSION);
     }
 
+    public static MapsDb from(Context context) {
+        return new MapsDb(context);
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.beginTransaction();
@@ -56,8 +60,7 @@ public class MapsDb extends SQLiteOpenHelper {
         // do nothing. We currently don't have any previous database versions.
     }
 
-    public Cursor getMaps() {
-        SQLiteDatabase db = getReadableDatabase();
+    public static Cursor getMaps(SQLiteDatabase db) {
         return db.query(
                 MAPS_TABLE, arrayOf(MAP_ID, MAP_NAME, MAP_IMAGE_URL),
                 null, null, null, null, null
