@@ -18,5 +18,7 @@
     <string name="save_map">Save map</string>
     <string name="must_enter_map_name">You must enter map name</string>
     <string name="delete_map">Delete map</string>
+    <string name="image_capture_not_supported">Image capture is not supported on this device</string>
+    <string name="cannot_create_image_file">Cannot create image file</string>
 
 </resources>

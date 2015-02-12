@@ -7,7 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,12 +22,20 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+
+import static com.alexshtf.offlinenavigator.Utils.createCopyOfImage;
+
 
 public class MapListActivity extends ActionBarActivity {
 
     private static final int PICK_IMAGE = 1;
+    private static final int CAPTURE_IMAGE = 2;
+
     private MapsDbOpenHelper mapsDb;
     private MapListAdapter listAdapter;
+    private File photoFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +53,18 @@ public class MapListActivity extends ActionBarActivity {
                 NavigateActivity.start(MapListActivity.this, id);
             }
         });
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        photoFile = (File) savedInstanceState.getSerializable("photo_file");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("photo_file", photoFile);
     }
 
     @Override
@@ -73,16 +96,45 @@ public class MapListActivity extends ActionBarActivity {
         startActivityForResult(Intent.createChooser(intent, getString(R.string.select_map_picture)), PICK_IMAGE);
     }
 
+    private void launchAddFromCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (intent.resolveActivity(getPackageManager()) == null) {
+            Log.e("", "Image capture is not supported. resolveActivity returned null");
+            Toast.makeText(this, R.string.image_capture_not_supported, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        photoFile = null;
+        try {
+            photoFile = Utils.createImageFile(this);
+        } catch (IOException e) {
+            Log.e("", "Cannot create image file", e);
+            Toast.makeText(this, R.string.cannot_create_image_file, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+        startActivityForResult(intent, CAPTURE_IMAGE);
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                getContentResolver().takePersistableUriPermission(
-                        data.getData(),
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                );
+            try {
+                File imageFile = createCopyOfImage(this, data.getData());
+                launchCreateMapActivity(Uri.fromFile(imageFile));
+            } catch (IOException e) {
+                Log.e("", "Cannot copy image to private storage", e);
             }
-            launchCreateMapActivity(data.getData());
+        }
+
+        if (requestCode == CAPTURE_IMAGE) {
+            if (resultCode == RESULT_OK)
+                launchCreateMapActivity(Uri.fromFile(photoFile));
+            else
+                //noinspection ResultOfMethodCallIgnored
+                photoFile.delete();
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -106,6 +158,7 @@ public class MapListActivity extends ActionBarActivity {
 
         switch(id) {
             case R.id.action_add_from_camera:
+                launchAddFromCamera();
                 Toast.makeText(this, "Not yet implemented", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_add_from_gallery:
@@ -127,7 +180,7 @@ public class MapListActivity extends ActionBarActivity {
 
         @Override
         public View newView(Context context, final Cursor cursor, ViewGroup parent) {
-            View view = LayoutInflater.from(context).inflate(R.layout.map_list_item, parent, false);
+            final View view = LayoutInflater.from(context).inflate(R.layout.map_list_item, parent, false);
 
             view.setTag(new MapItemTag(
                     (TextView) view.findViewById(R.id.map_name_view)
@@ -137,6 +190,7 @@ public class MapListActivity extends ActionBarActivity {
             view.findViewById(R.id.delete_map_button).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Utils.deleteMapImage(getTag(view).getMapInfo().getImageUri());
                     MapsDb.deleteMap(mapsDb, mapId);
                     changeCursor(MapsDb.getAllMaps(db));
                 }
@@ -149,13 +203,21 @@ public class MapListActivity extends ActionBarActivity {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            MapItemTag tag = (MapItemTag) view.getTag();
-            tag.getMapNameView().setText(MapsDb.getMapInfo(cursor).getName());
+            MapInfo mapInfo = MapsDb.getMapInfo(cursor);
+
+            MapItemTag tag = getTag(view);
+            tag.setMapInfo(mapInfo);
+            tag.getMapNameView().setText(mapInfo.getName());
+        }
+
+        MapItemTag getTag(View view) {
+            return (MapItemTag) view.getTag();
         }
     }
 
     private static class MapItemTag {
         private final TextView mapNameView;
+        private MapInfo mapInfo;
 
         public MapItemTag(TextView mapNameView) {
             this.mapNameView = mapNameView;
@@ -163,6 +225,14 @@ public class MapListActivity extends ActionBarActivity {
 
         public TextView getMapNameView() {
             return mapNameView;
+        }
+
+        public MapInfo getMapInfo() {
+            return mapInfo;
+        }
+
+        public void setMapInfo(MapInfo mapInfo) {
+            this.mapInfo = mapInfo;
         }
     }
 }
