@@ -12,10 +12,11 @@
         android:layout_height="wrap_content"
         android:hint="@string/map_name"/>
 
-    <ImageView
+    <uk.co.senab.photoview.PhotoView
         android:id="@+id/map_image_preview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_below="@id/map_name_view"
-        android:contentDescription="@string/map_image_preview" />
+        android:contentDescription="@string/map_image_preview"
+    />
 </RelativeLayout>

@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import uk.co.senab.photoview.PhotoView;
+
 
 public class CreateMapActivity extends ActionBarActivity {
 
@@ -26,7 +28,7 @@ public class CreateMapActivity extends ActionBarActivity {
         String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_URI_KEY);
         Uri mapImageUri = Uri.parse(mapImageFile);
 
-        ImageView mapImage = (ImageView) findViewById(R.id.map_image_preview);
+        PhotoView mapImage = (PhotoView) findViewById(R.id.map_image_preview);
         mapImage.setImageURI(mapImageUri);
     }
 
