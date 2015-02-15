@@ -1,5 +1,6 @@
 package com.alexshtf.offlinenavigator;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -15,6 +16,7 @@ import uk.co.senab.photoview.PhotoView;
 public class CreateMapActivity extends ActionBarActivity {
 
     public static final String MAP_IMAGE_URI_KEY = "MAP_IMAGE_URI_KEY";
+    public static final String MAP_ID_KEY = "MAP_ID_KEY";
 
 
     @Override
@@ -50,15 +52,14 @@ public class CreateMapActivity extends ActionBarActivity {
 
             if (mapName.isEmpty())
                 notifyMustEnterMapName();
-            else
-                startNavigateActivity(saveMap(mapName, imageUri));
+            else {
+                Intent result = new Intent();
+                result.putExtra(MAP_ID_KEY, saveMap(mapName, imageUri));
+                setResult(RESULT_OK, result);
+                finish();
+            }
 
             return true;
-        }
-
-        private void startNavigateActivity(long mapId) {
-            NavigateActivity.start(CreateMapActivity.this, mapId);
-            finish();
         }
 
         private long saveMap(String mapName, String imageUri) {

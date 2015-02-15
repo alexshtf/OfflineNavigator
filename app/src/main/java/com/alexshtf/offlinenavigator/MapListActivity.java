@@ -32,6 +32,7 @@ public class MapListActivity extends ActionBarActivity {
 
     private static final int PICK_IMAGE = 1;
     private static final int CAPTURE_IMAGE = 2;
+    private static final int CREATE_MAP_REQUEST = 3;
 
     private MapsDbOpenHelper mapsDb;
     private MapListAdapter listAdapter;
@@ -117,6 +118,11 @@ public class MapListActivity extends ActionBarActivity {
         startActivityForResult(intent, CAPTURE_IMAGE);
     }
 
+    private void launchCreateMapActivity(Uri image) {
+        Intent intent = new Intent(this, CreateMapActivity.class);
+        intent.putExtra(CreateMapActivity.MAP_IMAGE_URI_KEY, image.toString());
+        startActivityForResult(intent, CREATE_MAP_REQUEST);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -137,13 +143,12 @@ public class MapListActivity extends ActionBarActivity {
                 photoFile.delete();
         }
 
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+        if (requestCode == CREATE_MAP_REQUEST && resultCode == RESULT_OK) {
+            long mapId = data.getExtras().getLong(CreateMapActivity.MAP_ID_KEY);
+            NavigateActivity.start(this, mapId);
+        }
 
-    private void launchCreateMapActivity(Uri image) {
-        Intent intent = new Intent(this, CreateMapActivity.class);
-        intent.putExtra(CreateMapActivity.MAP_IMAGE_URI_KEY, image.toString());
-        startActivity(intent);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
