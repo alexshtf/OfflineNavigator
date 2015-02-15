@@ -1,28 +1,25 @@
 package com.alexshtf.offlinenavigator;
 
 import android.content.Context;
-import android.database.Cursor;
+import android.graphics.Matrix;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.alexshtf.interp.Point;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import uk.co.senab.photoview.PhotoView;
 
 import static java.nio.channels.Channels.newChannel;
 
@@ -88,5 +85,17 @@ public class Utils {
         File file = new File(uri.getPath());
         //noinspection ResultOfMethodCallIgnored
         file.delete();
+    }
+
+    public static void repositionIcon(PhotoView photoView, View icon, float imageX, float imageY, int iconWidth, int iconHeight) {
+        int photoW = photoView.getDrawable().getIntrinsicWidth();
+        int photoH = photoView.getDrawable().getIntrinsicHeight();
+
+        float[] xy = {imageX * photoW, imageY * photoH};
+        Matrix displayMatrix = photoView.getDisplayMatrix();
+        displayMatrix.mapPoints(xy);
+
+        icon.setTranslationX(xy[0] - 0.5f * iconHeight);
+        icon.setTranslationY(xy[1] - 0.5f * iconWidth);
     }
 }

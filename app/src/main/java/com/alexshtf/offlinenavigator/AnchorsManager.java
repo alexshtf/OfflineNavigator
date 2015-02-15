@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -12,17 +11,19 @@ import android.widget.RelativeLayout;
 import com.alexshtf.interp.LocationInterpolator;
 import com.alexshtf.interp.Point;
 
+import uk.co.senab.photoview.PhotoView;
+
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
 class AnchorsManager {
     private final LocationInterpolator locationInterpolator;
-    private final MatrixNotifyingImageView mapImage;
+    private final PhotoView mapImage;
     private final FrameLayout mapLayout;
     private Location lastKnownLocation;
     private Activity activity;
 
-    public AnchorsManager(Activity activity, MatrixNotifyingImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
+    public AnchorsManager(Activity activity, PhotoView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
         this.locationInterpolator = locationInterpolator;
         this.mapImage = mapImage;
         this.mapLayout = mapLayout;
@@ -99,14 +100,11 @@ class AnchorsManager {
 
     private void updateIconDisplay(View anchorView) {
         Point point = pointOnImageOf(anchorView);
-        int w = imageWidthOf(anchorView);
-        int h = imageHeightOf(anchorView);
-
-        float[] xy = { point.getX(), point.getY() };
-        mapImage.getImageViewMatrix().mapPoints(xy);
-
-        anchorView.setTranslationX(xy[0] - 0.5f * w);
-        anchorView.setTranslationY(xy[1] - 0.5f * h);
+        Utils.repositionIcon(
+                mapImage, anchorView,
+                point.getX(), point.getY(),
+                imageWidthOf(anchorView), imageHeightOf(anchorView)
+        );
         anchorView.setVisibility(View.VISIBLE);
     }
 

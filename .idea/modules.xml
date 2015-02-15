@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/OfflineNavigator.iml" filepath="$PROJECT_DIR$/OfflineNavigator.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/imageviewzoom/imageviewzoom.iml" filepath="$PROJECT_DIR$/imageviewzoom/imageviewzoom.iml" />
       <module fileurl="file://$PROJECT_DIR$/interp/interp.iml" filepath="$PROJECT_DIR$/interp/interp.iml" />
       <module fileurl="file://$PROJECT_DIR$/interp.test/interp.test.iml" filepath="$PROJECT_DIR$/interp.test/interp.test.iml" />
     </modules>
