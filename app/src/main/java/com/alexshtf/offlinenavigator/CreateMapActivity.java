@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
 import uk.co.senab.photoview.PhotoView;
 
 
@@ -30,8 +32,8 @@ public class CreateMapActivity extends ActionBarActivity {
         String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_URI_KEY);
         Uri mapImageUri = Uri.parse(mapImageFile);
 
-        PhotoView mapImage = (PhotoView) findViewById(R.id.map_image_preview);
-        mapImage.setImageURI(mapImageUri);
+        SubsamplingScaleImageView mapImage = (SubsamplingScaleImageView) findViewById(R.id.map_image_preview);
+        mapImage.setImageUri(mapImageUri);
     }
 
     @Override
