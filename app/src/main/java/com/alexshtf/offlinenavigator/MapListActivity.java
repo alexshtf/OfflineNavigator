@@ -186,13 +186,12 @@ public class MapListActivity extends ActionBarActivity {
                     (TextView) view.findViewById(R.id.map_name_view)
             ));
 
-            final long mapId = cursor.getLong(cursor.getColumnIndex("_id"));
             view.findViewById(R.id.delete_map_button).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Utils.deleteMapImage(getTag(view).getMapInfo().getImageUri());
-                    MapsDb.deleteMap(mapsDb, mapId);
-                    changeCursor(MapsDb.getAllMaps(db));
+                    deleteMapImage(view);
+                    deleteMapFromDb(view);
+                    refreshMapsFromDb();
                 }
             });
 
@@ -201,12 +200,27 @@ public class MapListActivity extends ActionBarActivity {
             return view;
         }
 
+        private void refreshMapsFromDb() {
+            changeCursor(MapsDb.getAllMaps(db));
+        }
+
+        private void deleteMapFromDb(View view) {
+            long mapId = getTag(view).getMapId();
+            MapsDb.deleteMap(mapsDb, mapId);
+        }
+
+        private void deleteMapImage(View view) {
+            String imageUri = getTag(view).getMapInfo().getImageUri();
+            Utils.deleteMapImage(imageUri);
+        }
+
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             MapInfo mapInfo = MapsDb.getMapInfo(cursor);
 
             MapItemTag tag = getTag(view);
             tag.setMapInfo(mapInfo);
+            tag.setMapId(cursor.getLong(cursor.getColumnIndex("_id")));
             tag.getMapNameView().setText(mapInfo.getName());
         }
 
@@ -218,6 +232,7 @@ public class MapListActivity extends ActionBarActivity {
     private static class MapItemTag {
         private final TextView mapNameView;
         private MapInfo mapInfo;
+        private long mapId;
 
         public MapItemTag(TextView mapNameView) {
             this.mapNameView = mapNameView;
@@ -234,5 +249,9 @@ public class MapListActivity extends ActionBarActivity {
         public void setMapInfo(MapInfo mapInfo) {
             this.mapInfo = mapInfo;
         }
+
+        public long getMapId() { return mapId; }
+
+        public void setMapId(long mapId) { this.mapId = mapId; }
     }
 }
