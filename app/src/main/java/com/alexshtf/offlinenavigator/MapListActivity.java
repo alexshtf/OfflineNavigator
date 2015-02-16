@@ -128,8 +128,8 @@ public class MapListActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
             try {
-                File imageFile = createCopyOfImage(this, data.getData());
-                launchCreateMapActivity(Uri.fromFile(imageFile));
+                photoFile = createCopyOfImage(this, data.getData());
+                launchCreateMapActivity(Uri.fromFile(photoFile));
             } catch (IOException e) {
                 Log.e("", "Cannot copy image to private storage", e);
             }
@@ -143,9 +143,14 @@ public class MapListActivity extends ActionBarActivity {
                 photoFile.delete();
         }
 
-        if (requestCode == CREATE_MAP_REQUEST && resultCode == RESULT_OK) {
-            long mapId = data.getExtras().getLong(CreateMapActivity.MAP_ID_KEY);
-            NavigateActivity.start(this, mapId);
+        if (requestCode == CREATE_MAP_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                long mapId = data.getExtras().getLong(CreateMapActivity.MAP_ID_KEY);
+                NavigateActivity.start(this, mapId);
+            }
+            else
+                //noinspection ResultOfMethodCallIgnored
+                photoFile.delete();
         }
 
         super.onActivityResult(requestCode, resultCode, data);
