@@ -27,10 +27,10 @@
         android:layout_above="@id/buttons"
         android:id="@+id/map_layout">
 
-        <uk.co.senab.photoview.PhotoView
+        <com.alexshtf.offlinenavigator.MapImageView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:id="@+id/map_image"/>
+            android:id="@+id/map_image" />
 
         <ImageView
             android:layout_width="wrap_content"

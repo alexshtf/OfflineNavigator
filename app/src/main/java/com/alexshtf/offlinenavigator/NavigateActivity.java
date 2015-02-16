@@ -19,6 +19,7 @@ import android.widget.ToggleButton;
 
 import com.alexshtf.interp.LocationInterpolator;
 import com.alexshtf.interp.Point;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -39,7 +40,7 @@ public class NavigateActivity extends ActionBarActivity {
     private long mapId;
     private MapsDbOpenHelper mapsDbOpenHelper;
 
-    private PhotoView mapImage;
+    private MapImageView mapImage;
     private ToggleButton iAmHere;
 
     private LocationIconPositionManager locationIconPositionManager;
@@ -70,7 +71,7 @@ public class NavigateActivity extends ActionBarActivity {
 
 
         FrameLayout mapLayout = (FrameLayout) findViewById(R.id.map_layout);
-        mapImage = (PhotoView) findViewById(R.id.map_image);
+        mapImage = (MapImageView) findViewById(R.id.map_image);
         iAmHere = (ToggleButton) findViewById(R.id.i_am_here);
 
         locationIconPositionManager = new LocationIconPositionManager(mapImage, (ImageView) findViewById(R.id.location_icon));
@@ -80,8 +81,8 @@ public class NavigateActivity extends ActionBarActivity {
         loadStateFromDatabase();
         enableDisableControls();
 
-        mapImage.setOnPhotoTapListener(new ImageTapListener());
-        mapImage.setOnMatrixChangeListener(new ImageMatrixChangedListener(
+        mapImage.setOnTapListener(new ImageTapListener());
+        mapImage.setOnRefreshListener(new ImageMatrixChangedListener(
                 locationIconPositionManager,
                 anchorsManager
         ));
@@ -115,7 +116,7 @@ public class NavigateActivity extends ActionBarActivity {
     }
 
     private void showImage(String imageUri) {
-        mapImage.setImageURI(Uri.parse(imageUri));
+        mapImage.setImageUri(Uri.parse(imageUri));
     }
 
     @Override
@@ -176,7 +177,7 @@ public class NavigateActivity extends ActionBarActivity {
             repositionLocationIcon(onImage.getX(), onImage.getY());
     }
 
-    private class ImageMatrixChangedListener implements PhotoViewAttacher.OnMatrixChangedListener {
+    private class ImageMatrixChangedListener implements MapImageView.IRefreshListener {
 
         private LocationIconPositionManager locMgr;
         private AnchorsManager anchorsMgr;
@@ -186,21 +187,20 @@ public class NavigateActivity extends ActionBarActivity {
             this.anchorsMgr = anchorsMgr;
         }
 
-
         @Override
-        public void onMatrixChanged(RectF rectF) {
+        public void onRefresh() {
             locMgr.updateDisplay();
             anchorsMgr.updateIconsDisplay();
         }
     }
 
     private class LocationIconPositionManager {
-        private PhotoView mapImage;
+        private SubsamplingScaleImageView mapImage;
         private ImageView locationIcon;
         private float imageX;
         private float imageY;
 
-        public LocationIconPositionManager(PhotoView mapImage, ImageView locationIcon) {
+        public LocationIconPositionManager(SubsamplingScaleImageView mapImage, ImageView locationIcon) {
             this.mapImage = mapImage;
             this.locationIcon = locationIcon;
         }
@@ -263,9 +263,9 @@ public class NavigateActivity extends ActionBarActivity {
         }
     }
 
-    private class ImageTapListener implements PhotoViewAttacher.OnPhotoTapListener {
+    private class ImageTapListener implements MapImageView.OnTapListener {
         @Override
-        public void onPhotoTap(View view, float x, float y) {
+        public void onImageTap(View view, float x, float y) {
             if (iAmHere.isChecked()) {
                 userIsHere(x, y);
             }

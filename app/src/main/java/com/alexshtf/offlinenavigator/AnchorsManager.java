@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 
 import com.alexshtf.interp.LocationInterpolator;
 import com.alexshtf.interp.Point;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import uk.co.senab.photoview.PhotoView;
 
@@ -18,12 +19,12 @@ import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
 class AnchorsManager {
     private final LocationInterpolator locationInterpolator;
-    private final PhotoView mapImage;
+    private final SubsamplingScaleImageView mapImage;
     private final FrameLayout mapLayout;
     private Location lastKnownLocation;
     private Activity activity;
 
-    public AnchorsManager(Activity activity, PhotoView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
+    public AnchorsManager(Activity activity, SubsamplingScaleImageView mapImage, FrameLayout mapLayout, LocationInterpolator locationInterpolator) {
         this.locationInterpolator = locationInterpolator;
         this.mapImage = mapImage;
         this.mapLayout = mapLayout;

@@ -2,6 +2,7 @@ package com.alexshtf.offlinenavigator;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Environment;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.alexshtf.interp.Point;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,15 +89,12 @@ public class Utils {
         file.delete();
     }
 
-    public static void repositionIcon(PhotoView photoView, View icon, float imageX, float imageY, int iconWidth, int iconHeight) {
-        int photoW = photoView.getDrawable().getIntrinsicWidth();
-        int photoH = photoView.getDrawable().getIntrinsicHeight();
+    public static void repositionIcon(SubsamplingScaleImageView photoView, View icon, float imageX, float imageY, int iconWidth, int iconHeight) {
+        PointF pnt = photoView.sourceToViewCoord(imageX, imageY);
+        if (pnt == null)
+            return;
 
-        float[] xy = {imageX * photoW, imageY * photoH};
-        Matrix displayMatrix = photoView.getDisplayMatrix();
-        displayMatrix.mapPoints(xy);
-
-        icon.setTranslationX(xy[0] - 0.5f * iconHeight);
-        icon.setTranslationY(xy[1] - 0.5f * iconWidth);
+        icon.setTranslationX(pnt.x - 0.5f * iconHeight);
+        icon.setTranslationY(pnt.y - 0.5f * iconWidth);
     }
 }
