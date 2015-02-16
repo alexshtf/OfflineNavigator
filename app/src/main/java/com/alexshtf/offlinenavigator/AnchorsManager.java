@@ -12,8 +12,6 @@ import com.alexshtf.interp.LocationInterpolator;
 import com.alexshtf.interp.Point;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
-import uk.co.senab.photoview.PhotoView;
-
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.alexshtf.offlinenavigator.Utils.asPoint;
 

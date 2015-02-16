@@ -21,8 +21,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import uk.co.senab.photoview.PhotoView;
-
 import static java.nio.channels.Channels.newChannel;
 
 public class Utils {

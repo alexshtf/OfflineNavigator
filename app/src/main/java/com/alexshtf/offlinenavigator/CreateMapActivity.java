@@ -12,8 +12,6 @@ import android.widget.Toast;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
-import uk.co.senab.photoview.PhotoView;
-
 
 public class CreateMapActivity extends ActionBarActivity {
 

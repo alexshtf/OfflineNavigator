@@ -26,9 +26,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import uk.co.senab.photoview.PhotoView;
-import uk.co.senab.photoview.PhotoViewAttacher;
-
 import static com.alexshtf.offlinenavigator.AnchorsManager.isAnchor;
 import static com.alexshtf.offlinenavigator.Utils.asPoint;
 
