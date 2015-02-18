@@ -12,9 +12,37 @@
         android:layout_height="wrap_content"
         android:hint="@string/map_name"/>
 
-    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+    <com.alexshtf.offlinenavigator.MapImageView
         android:id="@+id/map_image_preview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:layout_below="@id/map_name_view"/>
+
+    <ImageView
+        android:id="@+id/top_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_boundary"
+        android:layout_below="@id/map_name_view" />
+
+    <ImageView
+        android:id="@+id/top_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_boundary"
+        android:layout_below="@id/map_name_view"/>
+
+    <ImageView
+        android:id="@+id/bottom_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_boundary"
+        android:layout_below="@id/map_name_view"/>
+
+    <ImageView
+        android:id="@+id/bottom_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_boundary"
         android:layout_below="@id/map_name_view"/>
 </RelativeLayout>

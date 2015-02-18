@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 
+import static com.alexshtf.offlinenavigator.Utils.arrayOf;
 import static com.alexshtf.offlinenavigator.Utils.createCopyOfImage;
 
 
@@ -169,7 +172,6 @@ public class MapListActivity extends ActionBarActivity {
         switch(id) {
             case R.id.action_add_from_camera:
                 launchAddFromCamera();
-                Toast.makeText(this, "Not yet implemented", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_add_from_gallery:
                 launchAddExistingImage();

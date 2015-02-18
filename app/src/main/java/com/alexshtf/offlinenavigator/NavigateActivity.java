@@ -3,8 +3,6 @@ package com.alexshtf.offlinenavigator;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Matrix;
-import android.graphics.RectF;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -174,7 +172,7 @@ public class NavigateActivity extends ActionBarActivity {
             repositionLocationIcon(onImage.getX(), onImage.getY());
     }
 
-    private class ImageMatrixChangedListener implements MapImageView.IRefreshListener {
+    private class ImageMatrixChangedListener implements MapImageView.OnRefreshListener {
 
         private LocationIconPositionManager locMgr;
         private AnchorsManager anchorsMgr;

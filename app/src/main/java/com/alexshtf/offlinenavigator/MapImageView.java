@@ -12,8 +12,9 @@ import android.view.View;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 public class MapImageView extends SubsamplingScaleImageView {
-    private IRefreshListener refreshListener;
+    private OnRefreshListener onRefreshListener;
     private OnTapListener onTapListener;
+    private OnImageReadyListener onImageReadyListener;
     private final GestureDetector gd;
 
     public MapImageView(Context context, AttributeSet attr) {
@@ -35,19 +36,35 @@ public class MapImageView extends SubsamplingScaleImageView {
         return super.onTouchEvent(event);
     }
 
-    public void setOnRefreshListener(IRefreshListener refreshListener) {
-        this.refreshListener = refreshListener;
+    public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
+        this.onRefreshListener = onRefreshListener;
     }
 
     public void setOnTapListener(OnTapListener onTapListener) {
         this.onTapListener = onTapListener;
     }
 
+    public void setOnImageReadyListener(OnImageReadyListener onImageReadyListener) {
+        this.onImageReadyListener = onImageReadyListener;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (refreshListener != null)
-            refreshListener.onRefresh();
+        if (onRefreshListener != null)
+            onRefreshListener.onRefresh();
+    }
+
+    @Override
+    protected void onImageReady() {
+        super.onImageReady();
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (onImageReadyListener != null)
+                    onImageReadyListener.onImageReady();
+            }
+        });
     }
 
     private GestureDetector setupGestureDetector() {
@@ -64,11 +81,15 @@ public class MapImageView extends SubsamplingScaleImageView {
         });
     }
 
-    public static interface IRefreshListener {
+    public static interface OnRefreshListener {
         void onRefresh();
     }
 
-    public interface OnTapListener {
+    public static interface OnTapListener {
         public void onImageTap(View view, float x, float y);
+    }
+
+    public static interface OnImageReadyListener {
+        public void onImageReady();
     }
 }
