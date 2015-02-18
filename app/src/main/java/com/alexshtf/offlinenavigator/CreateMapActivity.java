@@ -1,15 +1,17 @@
 package com.alexshtf.offlinenavigator;
 
 import android.content.Intent;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import static com.alexshtf.offlinenavigator.Utils.arrayOf;
 
 
 public class CreateMapActivity extends ActionBarActivity {
@@ -18,10 +20,10 @@ public class CreateMapActivity extends ActionBarActivity {
     public static final String MAP_ID_KEY = "MAP_ID_KEY";
 
     private MapImageView mapImage;
-    private ImageView topLeft;
-    private ImageView topRight;
-    private ImageView bottomLeft;
-    private ImageView bottomRight;
+    private ImageView topLeftIcon;
+    private ImageView topRightIcon;
+    private ImageView bottomLeftIcon;
+    private ImageView bottomRightIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,44 +34,65 @@ public class CreateMapActivity extends ActionBarActivity {
         initializeCropIconsAfterImageReady();
     }
 
+    private void showImageFromIntent() {
+        String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_URI_KEY);
+        Uri mapImageUri = Uri.parse(mapImageFile);
+        mapImage.setImageUri(mapImageUri);
+    }
+
+    private void findViews() {
+        mapImage = (MapImageView) findViewById(R.id.map_image_preview);
+        topLeftIcon = (ImageView) findViewById(R.id.top_left);
+        topRightIcon = (ImageView) findViewById(R.id.top_right);
+        bottomLeftIcon = (ImageView) findViewById(R.id.bottom_left);
+        bottomRightIcon = (ImageView) findViewById(R.id.bottom_right);
+    }
+
     private void initializeCropIconsAfterImageReady() {
         mapImage.setOnImageReadyListener(new MapImageView.OnImageReadyListener() {
             @Override
             public void onImageReady() {
                 setupCropIcons();
+                setupOnRefreshListener();
                 mapImage.setOnImageReadyListener(null);
             }
         });
     }
 
-    private void findViews() {
-        mapImage = (MapImageView) findViewById(R.id.map_image_preview);
-        topLeft = (ImageView) findViewById(R.id.top_left);
-        topRight = (ImageView) findViewById(R.id.top_right);
-        bottomLeft = (ImageView) findViewById(R.id.bottom_left);
-        bottomRight = (ImageView) findViewById(R.id.bottom_right);
+    private void setupOnRefreshListener() {
+        mapImage.setOnRefreshListener(new MapImageView.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshIconPositions();
+            }
+        });
     }
 
     private void setupCropIcons() {
         int w = mapImage.getSWidth();
         int h = mapImage.getSHeight();
-        Log.d("", "Width is " + w);
-        Log.d("", "Height is " + h);
+        setIconPosition(topLeftIcon, 0, 0);
+        setIconPosition(topRightIcon, w, 0);
+        setIconPosition(bottomRightIcon, w, h);
+        setIconPosition(bottomLeftIcon, 0, h);
+        refreshIconPositions();
+    }
 
-        repositionIcon(topLeft, 0, 0);
-        repositionIcon(topRight, w, 0);
-        repositionIcon(bottomRight, w, h);
-        repositionIcon(bottomLeft, 0, h);
+    private void setIconPosition(ImageView icon, float x, float y) {
+        icon.setTag(new PointF(x, y));
+    }
+
+    private PointF getIconPosition(ImageView icon) {
+        return (PointF) icon.getTag();
+    }
+
+    private void refreshIconPositions() {
+        for(ImageView icon : arrayOf(topLeftIcon, topRightIcon, bottomLeftIcon, bottomRightIcon))
+            repositionIcon(icon, getIconPosition(icon).x, getIconPosition(icon).y);
     }
 
     private void repositionIcon(ImageView icon, float x, float y) {
         Utils.repositionIcon(mapImage, icon, x, y, icon.getDrawable().getIntrinsicWidth(), icon.getDrawable().getIntrinsicHeight());
-    }
-
-    private void showImageFromIntent() {
-        String mapImageFile = getIntent().getStringExtra(MAP_IMAGE_URI_KEY);
-        Uri mapImageUri = Uri.parse(mapImageFile);
-        mapImage.setImageUri(mapImageUri);
     }
 
     @Override
