@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -30,8 +31,14 @@ public class CreateMapActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_map);
         findViews();
+        hideCropViews();
         showImageFromIntent();
         initializeCropIconsAfterImageReady();
+    }
+
+    private void hideCropViews() {
+        for(View icon : getIconViews())
+            icon.setVisibility(View.INVISIBLE);
     }
 
     private void showImageFromIntent() {
@@ -52,11 +59,17 @@ public class CreateMapActivity extends ActionBarActivity {
         mapImage.setOnImageReadyListener(new MapImageView.OnImageReadyListener() {
             @Override
             public void onImageReady() {
-                setupCropIcons();
+                setupIconViews();
+                showIconViews();
                 setupOnRefreshListener();
                 mapImage.setOnImageReadyListener(null);
             }
         });
+    }
+
+    private void showIconViews() {
+        for(View icon : getIconViews())
+            icon.setVisibility(View.VISIBLE);
     }
 
     private void setupOnRefreshListener() {
@@ -68,7 +81,7 @@ public class CreateMapActivity extends ActionBarActivity {
         });
     }
 
-    private void setupCropIcons() {
+    private void setupIconViews() {
         int w = mapImage.getSWidth();
         int h = mapImage.getSHeight();
         setIconPosition(topLeftIcon, 0, 0);
@@ -87,8 +100,12 @@ public class CreateMapActivity extends ActionBarActivity {
     }
 
     private void refreshIconPositions() {
-        for(ImageView icon : arrayOf(topLeftIcon, topRightIcon, bottomLeftIcon, bottomRightIcon))
+        for(ImageView icon : getIconViews())
             repositionIcon(icon, getIconPosition(icon).x, getIconPosition(icon).y);
+    }
+
+    private ImageView[] getIconViews() {
+        return arrayOf(topLeftIcon, topRightIcon, bottomLeftIcon, bottomRightIcon);
     }
 
     private void repositionIcon(ImageView icon, float x, float y) {
