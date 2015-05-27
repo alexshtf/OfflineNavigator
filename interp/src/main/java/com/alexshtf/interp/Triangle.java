@@ -19,7 +19,7 @@ public class Triangle {
      * @param x The point
      * @return The distance to the triangle.
      */
-    public float distance(final Point x) {
+    public double distance(final Point x) {
         if (isInside(x))
             return 0;
 
@@ -39,16 +39,16 @@ public class Triangle {
      * and counter-clockwise triangles have positive area.
      * @return
      */
-    public float signedArea() {
-        return (float) getAreaMatrix().determinant();
+    public double signedArea() {
+        return getAreaMatrix().determinant();
     }
 
     private boolean isInside(Point x) {
-        float[] coordinates = barycentric(x);
+        double[] coordinates = barycentric(x);
 
         Arrays.sort(coordinates);
-        float min = coordinates[0];
-        float max = coordinates[2];
+        double min = coordinates[0];
+        double max = coordinates[2];
 
         return min >= 0 && max <= 1;
     }
@@ -59,7 +59,7 @@ public class Triangle {
      * @return An array of 3 coefficients such that x is the linear combination of the triangle's
      * points returned by {@link this.at(int)}, and the coordinates sum to 1.
      */
-    public float[] barycentric(Point a) {
+    public double[] barycentric(Point a) {
 
         SimpleMatrix vec = new SimpleMatrix(new double[][] {
                 {a.getX()},
@@ -69,10 +69,10 @@ public class Triangle {
 
         SimpleMatrix result = getAreaMatrix().pseudoInverse().mult(vec);
 
-        return new float[]{
-                (float) result.get(0, 0),
-                (float) result.get(1, 0),
-                (float) result.get(2, 0)
+        return new double[]{
+                result.get(0, 0),
+                result.get(1, 0),
+                result.get(2, 0)
         };
     }
 
@@ -110,9 +110,9 @@ public class Triangle {
 
         @Override
         public int compare(Point[] left, Point[] right) {
-            float dLeft = x.distanceToSegment(left[0], left[1]);
-            float dRight = x.distanceToSegment(right[0], right[1]);
-            return Float.compare(dLeft, dRight);
+            double dLeft = x.distanceToSegment(left[0], left[1]);
+            double dRight = x.distanceToSegment(right[0], right[1]);
+            return Double.compare(dLeft, dRight);
         }
     }
 }

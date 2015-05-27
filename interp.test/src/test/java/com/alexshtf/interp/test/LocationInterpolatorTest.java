@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import static com.alexshtf.interp.Point.xy;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -54,8 +55,10 @@ public class LocationInterpolatorTest  {
         for(int i = 0; i < 3; ++i)
             interpolator.addAnchor(onImage[i], onMap[i]);
 
-        for(int i = 0; i < 3; ++i)
-            assertThat("i = " + i, interpolator.interpMapToImage(onMap[i]), equalTo(onImage[i]));
+        for(int i = 0; i < 3; ++i) {
+            Point interpolated = interpolator.interpMapToImage(this.onMap[i]);
+            assertThat("i = " + i, Point.distSquared(this.onImage[i], interpolated), lessThan(1E-20));
+        }
     }
 
     @Test

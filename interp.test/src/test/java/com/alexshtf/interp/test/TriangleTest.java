@@ -51,7 +51,7 @@ public class TriangleTest {
         final double TOLERANCE = 1E-5f;
 
         double c = 1 - a - b;
-        float[] coordinates = triangle.barycentric(fromBarycentric(triangle, a, b, c));
+        double[] coordinates = triangle.barycentric(fromBarycentric(triangle, a, b, c));
 
         assertThat((double) coordinates[0], closeTo(a, TOLERANCE));
         assertThat((double) coordinates[1], closeTo(b, TOLERANCE));
@@ -102,9 +102,9 @@ public class TriangleTest {
         Triangle counterClockwise = triangle;
         Triangle clockwise = new Triangle(a, c, b);
 
-        assertThat(counterClockwise.signedArea() + clockwise.signedArea(), equalTo(0f));
-        assertThat(counterClockwise.signedArea(), greaterThan(0f));
-        assertThat(clockwise.signedArea(), lessThan(0f));
+        assertThat(counterClockwise.signedArea() + clockwise.signedArea(), equalTo(0.0));
+        assertThat(counterClockwise.signedArea(), greaterThan(0.0));
+        assertThat(clockwise.signedArea(), lessThan(0.0));
     }
 
     private static Point walkOrthogonallyFromEdge(Point a, Point b, float distance) {
@@ -119,9 +119,9 @@ public class TriangleTest {
     }
 
     private static Point fromBarycentric(Triangle t, double a, double b, double c) {
-        Point p = t.at(0).scaled((float)a);
-        Point q = t.at(1).scaled((float)b);
-        Point r = t.at(2).scaled((float)c);
+        Point p = t.at(0).scaled(a);
+        Point q = t.at(1).scaled(b);
+        Point r = t.at(2).scaled(c);
 
         return add(add(p, q), r);
     }

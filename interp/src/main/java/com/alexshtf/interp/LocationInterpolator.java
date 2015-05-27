@@ -69,7 +69,7 @@ public class LocationInterpolator {
     }
 
     private static Point barycentricInterpolation(Triangle mapTriangle, Point onMap, List<Point> onImage) {
-        float[] coordinates = mapTriangle.barycentric(onMap);
+        double[] coordinates = mapTriangle.barycentric(onMap);
         int[] indices = mapTriangle.getTag();
 
         Point p0 = onImage.get(indices[0]).scaled(coordinates[0]);
@@ -83,7 +83,7 @@ public class LocationInterpolator {
         return Collections.min(triangles, new Comparator<Triangle>() {
             @Override
             public int compare(Triangle o1, Triangle o2) {
-                return Float.compare(o1.distance(p), o2.distance(p));
+                return Double.compare(o1.distance(p), o2.distance(p));
             }
         });
     }

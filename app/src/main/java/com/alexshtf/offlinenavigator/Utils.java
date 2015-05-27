@@ -40,8 +40,8 @@ public class Utils {
 
     public static Point asPoint(Location location) {
         return Point.xy(
-                (float) location.getLongitude(),
-                (float) location.getLatitude()
+                location.getLongitude(),
+                location.getLatitude()
         );
     }
 

@@ -27,7 +27,7 @@ public class PointTest {
     }
 
     @Test
-    public void canSubstract() {
+    public void canSubtract() {
         assertThat(sub(p, q), equalTo(new Point(-4, -3)));
     }
 
@@ -40,8 +40,8 @@ public class PointTest {
     public void orthotonalToProducesOrthogonalResults(
             @LinSpace(first = -5, last = 5) double x,
             @LinSpace(first = -5, last = 5) double y) {
-        Point dir = new Point((float)x, (float)y);
-        assertThat(innerProduct(dir, orthogonalTo(dir)), equalTo(0f));
+        Point dir = new Point(x, y);
+        assertThat(innerProduct(dir, orthogonalTo(dir)), equalTo(0.0));
     }
 
     @Test
@@ -51,8 +51,8 @@ public class PointTest {
         final Point down = new Point(0, -1);
         final Point up = new Point(0, 1);
 
-        assertThat(dist(orthogonalTo(left), up), equalTo(0f));
-        assertThat(dist(orthogonalTo(down), left), equalTo(0f));
+        assertThat(dist(orthogonalTo(left), up), equalTo(0.0));
+        assertThat(dist(orthogonalTo(down), left), equalTo(0.0));
     }
 
     @Test
@@ -60,16 +60,16 @@ public class PointTest {
         Point segStart = new Point(-1, 1);
         Point segEnd = new Point(1, 1);
 
-        assertThat(segStart.distanceToSegment(segStart, segEnd), equalTo(0.0f));
-        assertThat(segEnd.distanceToSegment(segStart, segEnd), equalTo(0.0f));
-        assertThat(interpolate(segStart, segEnd, 0.5f).distanceToSegment(segStart, segEnd), equalTo(0.0f));
-        assertThat(pnt(-2, 1).distanceToSegment(segStart, segEnd), equalTo(1f));
-        assertThat(pnt(2, 1).distanceToSegment(segStart, segEnd), equalTo(1f));
-        assertThat(pnt(0, 0).distanceToSegment(segStart, segEnd), equalTo(1f));
+        assertThat(segStart.distanceToSegment(segStart, segEnd), equalTo(0.0));
+        assertThat(segEnd.distanceToSegment(segStart, segEnd), equalTo(0.0));
+        assertThat(interpolate(segStart, segEnd, 0.5f).distanceToSegment(segStart, segEnd), equalTo(0.0));
+        assertThat(pnt(-2, 1).distanceToSegment(segStart, segEnd), equalTo(1.0));
+        assertThat(pnt(2, 1).distanceToSegment(segStart, segEnd), equalTo(1.0));
+        assertThat(pnt(0, 0).distanceToSegment(segStart, segEnd), equalTo(1.0));
     }
 
-    static Point pnt(float x, float y) {
+    static Point pnt(double x, double y) {
         return new Point(x, y);
     }
-    static float dist(Point x, Point y) { return sub(x, y).norm(); }
+    static double dist(Point x, Point y) { return sub(x, y).norm(); }
 }

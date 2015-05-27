@@ -1,41 +1,45 @@
 package com.alexshtf.interp;
 
 public class Point {
-    private final float x;
-    private final float y;
+    private final double x;
+    private final double y;
 
-    public Point(float x, float y)
+    public Point(double x, double y)
     {
         this.x = x;
         this.y = y;
     }
 
-    public static Point xy(float x, float y) {
+    public static Point xy(double x, double y) {
         return new Point(x, y);
     }
 
-    public float getX() {
+    public static double distSquared(Point onImage, Point interpOnMap) {
+        return sub(interpOnMap, onImage).normSquared();
+    }
+
+    public double getX() {
         return x;
     }
 
-    public float getY() {
+    public double getY() {
         return y;
     }
 
-    public float normSquared() { return x*x + y*y; }
+    public double normSquared() { return x*x + y*y; }
 
-    public float norm() { return (float) Math.sqrt(normSquared()); }
+    public double norm() { return Math.sqrt(normSquared()); }
 
     public Point normalized() {
         if (normSquared() > 0) {
-            float norm = (float) Math.sqrt(normSquared());
+            double norm = Math.sqrt(normSquared());
             return new Point(x / norm, y / norm);
         }
 
         throw new ArithmeticException("Cannot normalize a zero vector");
     }
 
-    public Point scaled(float factor) {
+    public Point scaled(double factor) {
         return new Point(x * factor, y * factor);
     }
 
@@ -47,7 +51,7 @@ public class Point {
         return new Point(p.x - q.x, p.y - q.y);
     }
 
-    public static Point interpolate(Point p, Point q, float factor) {
+    public static Point interpolate(Point p, Point q, double factor) {
         return add(p.scaled(factor), q.scaled(1 - factor));
     }
 
@@ -55,15 +59,15 @@ public class Point {
         return new Point(dir.getY(), -dir.getX());
     }
 
-    public static float innerProduct(Point p, Point q) {
+    public static double innerProduct(Point p, Point q) {
         return p.x * q.x + p.y * q.y;
     }
 
-    public float distanceToSegment(Point segStart, Point segEnd) {
+    public double distanceToSegment(Point segStart, Point segEnd) {
         Point u = sub(segStart, segEnd);
         Point v = sub(this, segEnd);
 
-        float lambda = innerProduct(u, v) / u.normSquared();
+        double lambda = innerProduct(u, v) / u.normSquared();
 
         if (lambda < 0)      // we are near segEnd
             return sub(this, segEnd).norm();
@@ -80,16 +84,16 @@ public class Point {
 
         Point point = (Point) o;
 
-        if (Float.compare(point.x, x) != 0) return false;
-        if (Float.compare(point.y, y) != 0) return false;
+        if (Double.compare(point.x, x) != 0) return false;
+        if (Double.compare(point.y, y) != 0) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
-        result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
+        int result = (x != +0.0f ? (int)Double.doubleToLongBits(x) : 0);
+        result = 31 * result + (y != +0.0f ? (int)Double.doubleToLongBits(y) : 0);
         return result;
     }
 
